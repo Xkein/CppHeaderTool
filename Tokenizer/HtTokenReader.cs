@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CppHeaderTool.Tables
+namespace CppHeaderTool.Tokenizer
 {
-    internal class HtKeywordTable
+    internal class HtTokenReader
     {
     }
 }
