@@ -1,6 +1,5 @@
 ﻿using CppAst;
 using CppHeaderTool.Meta;
-using CppHeaderTool.Specifies;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,11 +8,11 @@ using System.Threading.Tasks;
 
 namespace CppHeaderTool.Types
 {
-    public class HtProperty : HtType, IHasCppElement
+    public class HtModule : HtType, IHasCppElement
     {
-        public CppElement element => cppField;
-        public CppField cppField;
+        public CppElement element => cppCompilation;
+        public CppCompilation cppCompilation;
+        public string moduleName;
 
-        public PropertyMeta meta;
     }
 }

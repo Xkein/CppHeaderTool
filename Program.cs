@@ -32,7 +32,7 @@ namespace CppHeaderTool
                 return -1;
             }
 
-            ModuleCodeGenerator moduleCodeGenerator = new ModuleCodeGenerator(Session.config.module, Session.config.outDir, Session.compilation);
+            ModuleCodeGenerator moduleCodeGenerator = new ModuleCodeGenerator(Session.config.module, Session.config.outDir);
             moduleCodeGenerator.Generate();
 
             if (Session.hasError)

@@ -11,10 +11,16 @@ namespace CppHeaderTool.Tables
 {
     internal class TypeTables
     {
+        private Dictionary<string, HtModule> _modules = new();
         private Dictionary<CppClass, HtClass> _classes = new();
         private Dictionary<CppEnum, HtEnum> _enums = new();
         private Dictionary<CppFunction, HtFunction> _functions = new();
         private Dictionary<CppField, HtProperty> _properties = new();
+
+        public void Add(HtModule type)
+        {
+            _modules.Add(type.moduleName, type);
+        }
 
         public void Add(HtClass type)
         {
@@ -34,6 +40,11 @@ namespace CppHeaderTool.Tables
         public void Add(HtProperty type)
         {
             _properties.Add(type.cppField, type);
+        }
+
+        public bool TryGet(string moduleName, out HtModule type)
+        {
+            return _modules.TryGetValue(moduleName, out type);
         }
 
         public bool TryGet(CppClass cppClass, out HtClass type)

@@ -1,4 +1,6 @@
 ﻿using CppAst;
+using CppHeaderTool.Specifies;
+using CppHeaderTool.Types;
 using Scriban.Parsing;
 using System;
 using System.Collections.Generic;
@@ -60,7 +62,13 @@ namespace CppHeaderTool.Parser
                 return;
             }
 
-            ParseCppTypes(compilation);
+            HtModule htModule = new HtModule();
+            htModule.moduleName = moduleName;
+            htModule.cppCompilation = compilation;
+
+            ParseChildren(compilation);
+
+            Session.typeTables.Add(htModule);
         }
 
         private bool ParseMeta()
@@ -85,7 +93,7 @@ namespace CppHeaderTool.Parser
             return compilation;
         }
 
-        private void ParseCppTypes(CppCompilation compilation)
+        private void ParseChildren(CppCompilation compilation)
         {
             foreach (CppEnum cppClass in compilation.Enums)
             {

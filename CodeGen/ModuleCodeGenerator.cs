@@ -16,18 +16,26 @@ namespace CppHeaderTool.CodeGen
     {
         public string moduleName { get; private set; }
         public string outDir { get; private set; }
-        public CppCompilation compilation { get; private set; }
 
-        public ModuleCodeGenerator(string moduleName, string outDir, CppCompilation compilation)
+        private HtModule _module;
+
+        public ModuleCodeGenerator(string moduleName, string outDir)
         {
             this.moduleName = moduleName;
             this.outDir = outDir;
-            this.compilation = compilation;
         }
 
         public void Generate()
         {
+            if (!Session.typeTables.TryGet(moduleName, out _module))
+            {
+                return;
+            }
+            CppCompilation compilation = _module.cppCompilation;
+
             List<Task> genTasks = new List<Task>();
+
+            genTasks.Add(GenerateModuleAsync(_module));
 
             foreach (CppEnum cppEnum in compilation.Enums)
             {
@@ -48,42 +56,31 @@ namespace CppHeaderTool.CodeGen
             Task.WhenAll(genTasks);
         }
 
+        private async Task GenerateModuleAsync(HtModule module)
+        {
+            await Session.templateManager.Generate(module, new[]
+            {
+                new TemplateGenerateInfo("module_header.scriban", Path.Combine(Session.config.outDir, "module", module.moduleName + ".h")),
+                new TemplateGenerateInfo("module_cpp.scriban", Path.Combine(Session.config.outDir, "module", module.moduleName + ".cpp")),
+            });
+        }
+
         private async Task GenerateEnumAsync(HtEnum htEnum)
         {
-            CodeTemplate headerTemplate = Session.templateManager.GetTemplate("enum_header.scriban");
-            CodeTemplate cppTemplate = Session.templateManager.GetTemplate("enum_cpp.scriban");
-
-            var templateContext = new TemplateContext();
-            var scriptObject = new ScriptObject();
-            scriptObject.Import(htEnum);
-
-            templateContext.PushGlobal(scriptObject);
-
-            Task headerTask = WriteTemplateAsync(headerTemplate, templateContext, Path.Combine(Session.config.outDir, "class", htEnum.cppEnum.Name + ".h"));
-            Task cppTask = WriteTemplateAsync(cppTemplate, templateContext, Path.Combine(Session.config.outDir, "class", htEnum.cppEnum.Name + ".cpp"));
-            await Task.WhenAll(headerTask, cppTask);
+            await Session.templateManager.Generate(htEnum, new[]
+            {
+                new TemplateGenerateInfo("enum_header.scriban", Path.Combine(Session.config.outDir, "enum", htEnum.cppEnum.Name + ".h")),
+                new TemplateGenerateInfo("enum_cpp.scriban", Path.Combine(Session.config.outDir, "enum", htEnum.cppEnum.Name + ".cpp")),
+            });
         }
 
         private async Task GenerateClass(HtClass htClass)
         {
-            CodeTemplate headerTemplate = Session.templateManager.GetTemplate("class_header.scriban");
-            CodeTemplate cppTemplate = Session.templateManager.GetTemplate("class_cpp.scriban");
-
-            var templateContext = new TemplateContext();
-            var scriptObject = new ScriptObject();
-            scriptObject.Import(htClass);
-
-            templateContext.PushGlobal(scriptObject);
-
-            Task headerTask = WriteTemplateAsync(headerTemplate, templateContext, Path.Combine(Session.config.outDir, "class", htClass.cppClass.Name + ".h"));
-            Task cppTask = WriteTemplateAsync(cppTemplate, templateContext, Path.Combine(Session.config.outDir, "class", htClass.cppClass.Name + ".cpp"));
-            await Task.WhenAll(headerTask, cppTask);
-        }
-
-        private async Task WriteTemplateAsync(CodeTemplate template, TemplateContext context, string path)
-        {
-            string content = template.Render(context);
-            await File.WriteAllTextAsync(path, content);
+            await Session.templateManager.Generate(htClass, new[]
+            {
+                new TemplateGenerateInfo("class_header.scriban", Path.Combine(Session.config.outDir, "class", htClass.cppClass.Name + ".h")),
+                new TemplateGenerateInfo("class_cpp.scriban", Path.Combine(Session.config.outDir, "class", htClass.cppClass.Name + ".cpp")),
+            });
         }
     }
 }
