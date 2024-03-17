@@ -35,7 +35,7 @@ namespace CppHeaderTool.Parser
             IEnumerable<string> lines = await File.ReadAllLinesAsync(filePath);
             foreach (string line in lines)
             {
-                ParseLine(line, curLine);
+                ParseLine(line, curLine++);
             }
         }
 

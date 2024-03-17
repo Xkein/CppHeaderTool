@@ -38,7 +38,7 @@ namespace CppHeaderTool.Templates
 
             public async Task ReadTemplate(string filePath)
             {
-                Console.WriteLine($"reading code template {filePath}");
+                Console.WriteLine($"loading code template {filePath}");
                 templateText = await File.ReadAllTextAsync(filePath);
                 template = Template.Parse(templateText);
             }
@@ -99,16 +99,23 @@ namespace CppHeaderTool.Templates
             foreach (TemplateGenerateInfo info in infos)
             {
                 CodeTemplate template = await GetTemplateAsync(info.template);
-                Task task = WriteTemplateAsync(template, templateContext, info.outputPath);
-                tasks.Add(task);
+                ValueTask task = WriteTemplateAsync(template, templateContext, info.outputPath);
+                if (!task.IsCompletedSuccessfully)
+                {
+                    tasks.Add(task.AsTask());
+                }
             }
             await Task.WhenAll(tasks);
         }
 
-        private async static Task WriteTemplateAsync(CodeTemplate template, TemplateContext context, string path)
+        private async static ValueTask WriteTemplateAsync(CodeTemplate template, TemplateContext context, string path)
         {
             string content = template.Render(context);
-            await File.WriteAllTextAsync(path, content);
+            if (string.IsNullOrEmpty(content) == false)
+            {
+                await File.WriteAllTextAsync(path, content);
+            }
+            Console.WriteLine($"{path} generated!");
         }
     }
 }

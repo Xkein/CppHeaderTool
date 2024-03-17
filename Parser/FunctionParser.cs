@@ -22,6 +22,8 @@ namespace CppHeaderTool.Parser
 
         public override ValueTask Parse()
         {
+            Console.WriteLine($"Parsing function {cppFunction.FullParentName}.{cppFunction.Name}");
+
             HtFunction htFunction = new HtFunction();
             htFunction.cppFunction = cppFunction;
 

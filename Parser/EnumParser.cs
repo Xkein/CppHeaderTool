@@ -23,6 +23,8 @@ namespace CppHeaderTool.Parser
 
         public override ValueTask Parse()
         {
+            Console.WriteLine($"Parsing enum {cppEnum.FullName}");
+
             HtEnum htEnum = new HtEnum();
             htEnum.cppEnum = cppEnum;
 

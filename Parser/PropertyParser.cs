@@ -23,6 +23,8 @@ namespace CppHeaderTool.Parser
 
         public override ValueTask Parse()
         {
+            Console.WriteLine($"Parsing property {cppField.FullParentName}.{cppField.Name}");
+
             HtProperty htProperty = new HtProperty();
             htProperty.cppField = cppField;
 

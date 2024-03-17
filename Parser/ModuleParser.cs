@@ -47,6 +47,8 @@ namespace CppHeaderTool.Parser
 
         public override async ValueTask Parse()
         {
+            Console.WriteLine($"Parsing module {moduleName}");
+
             Task<CppCompilation> compileTask = Task.Run(CompileHeaders);
 
             if (!await ParseMeta())

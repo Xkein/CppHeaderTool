@@ -23,6 +23,8 @@ namespace CppHeaderTool.Parser
 
         public override async ValueTask Parse()
         {
+            Console.WriteLine($"Parsing class {cppClass.FullName}");
+
             HtClass htClass = new HtClass();
             htClass.cppClass = cppClass;
 
