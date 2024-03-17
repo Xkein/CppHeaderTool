@@ -21,7 +21,7 @@ namespace CppHeaderTool.Parser
 
 
 
-        public override void Parse()
+        public override ValueTask Parse()
         {
             HtProperty htProperty = new HtProperty();
             htProperty.cppField = cppField;
@@ -30,6 +30,7 @@ namespace CppHeaderTool.Parser
 
             Session.typeTables.Add(htProperty);
 
+            return ValueTask.CompletedTask;
         }
     }
 }

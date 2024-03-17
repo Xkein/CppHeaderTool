@@ -25,6 +25,12 @@ namespace CppHeaderTool.Specifies
             meta.Serializable = metaData.GetOptionalBool("Serializable", true);
 
         }
+
+        public static void ParseRawMeta(ref RawMeta meta, HtMetaData metaData)
+        {
+            meta.metaData = metaData;
+            meta.hasMeta = true;
+        }
     }
 
 }

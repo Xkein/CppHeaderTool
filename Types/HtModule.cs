@@ -14,5 +14,9 @@ namespace CppHeaderTool.Types
         public CppCompilation cppCompilation;
         public string moduleName;
 
+        public List<HtClass> classes;
+        public List<HtFunction> functions;
+        public List<HtProperty> properties;
+        public List<HtEnum> enums;
     }
 }

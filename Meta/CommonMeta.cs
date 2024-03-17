@@ -23,5 +23,10 @@ namespace CppHeaderTool.Meta
 
     }
 
+    public struct RawMeta
+    {
+        public bool hasMeta;
+        public HtMetaData metaData;
+    }
 
 }

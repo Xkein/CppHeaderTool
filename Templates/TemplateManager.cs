@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Scriban.Parsing;
 
 namespace CppHeaderTool.Templates
 {
@@ -21,26 +22,70 @@ namespace CppHeaderTool.Templates
         }
     }
 
-    internal class TemplateManager
+    internal class TemplateManager : ITemplateLoader
     {
-        Dictionary<string, CodeTemplate> _templates;
-
         public TemplateManager()
         {
         
         }
 
-        public CodeTemplate GetTemplate(string path)
+        Dictionary<string, CodeTemplate> _templates = new();
+        class CodeTemplate
         {
-            if (!_templates.TryGetValue(path, out CodeTemplate template))
+            public string templateText;
+            public Template template;
+
+
+            public async Task ReadTemplate(string filePath)
             {
-                template = new CodeTemplate();
-                template.ReadTemplate(Path.Combine(Session.config.template, path));
-                _templates[path] = template;
+                Console.WriteLine($"reading code template {filePath}");
+                templateText = await File.ReadAllTextAsync(filePath);
+                template = Template.Parse(templateText);
             }
+
+            public string Render(TemplateContext context)
+            {
+                return template.Render(context);
+            }
+        }
+
+        private async ValueTask<CodeTemplate> GetTemplateAsync(string path)
+        {
+            if (_templates.TryGetValue(path, out CodeTemplate template))
+            {
+                return template;
+            }
+
+            template = new CodeTemplate();
+            await template.ReadTemplate(Path.Combine(Session.config.template, path));
+            _templates[path] = template;
 
             return template;
         }
+
+        public string GetPath(TemplateContext context, SourceSpan callerSpan, string templateName)
+        {
+            return templateName;
+        }
+
+        public string Load(TemplateContext context, SourceSpan callerSpan, string templatePath)
+        {
+            CodeTemplate codeTemplate = GetTemplateAsync(templatePath).Result;
+            return codeTemplate.templateText;
+        }
+
+        public async ValueTask<string> LoadAsync(TemplateContext context, SourceSpan callerSpan, string templatePath)
+        {
+            var task = GetTemplateAsync(templatePath);
+            if (task.IsCompletedSuccessfully)
+            {
+                return task.Result.templateText;
+            }
+
+            await task;
+            return task.Result.templateText;
+        }
+
 
         public async Task Generate(object importObject, TemplateGenerateInfo[] infos)
         {
@@ -53,7 +98,7 @@ namespace CppHeaderTool.Templates
             List<Task> tasks = new List<Task>();
             foreach (TemplateGenerateInfo info in infos)
             {
-                CodeTemplate template = this.GetTemplate(info.template);
+                CodeTemplate template = await GetTemplateAsync(info.template);
                 Task task = WriteTemplateAsync(template, templateContext, info.outputPath);
                 tasks.Add(task);
             }

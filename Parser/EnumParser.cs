@@ -21,7 +21,7 @@ namespace CppHeaderTool.Parser
 
 
 
-        public override void Parse()
+        public override ValueTask Parse()
         {
             HtEnum htEnum = new HtEnum();
             htEnum.cppEnum = cppEnum;
@@ -31,6 +31,8 @@ namespace CppHeaderTool.Parser
             ParseChildren(htEnum);
 
             Session.typeTables.Add(htEnum);
+
+            return ValueTask.CompletedTask;
         }
 
         private void ParseChildren(HtEnum htEnum)

@@ -1,5 +1,6 @@
 ﻿using CppAst;
 using CppHeaderTool.Specifies;
+using CppHeaderTool.Tables;
 using CppHeaderTool.Types;
 using Scriban.Parsing;
 using System;
@@ -44,17 +45,17 @@ namespace CppHeaderTool.Parser
             _parserOptions.SystemIncludeFolders.AddRange(systemIncludeDirs);
         }
 
-        public override async void Parse()
+        public override async ValueTask Parse()
         {
             Task<CppCompilation> compileTask = Task.Run(CompileHeaders);
 
-            if (!ParseMeta())
+            if (!await ParseMeta())
             {
                 Session.hasError = false;
                 return;
             }
 
-            CppCompilation compilation = await compileTask;
+            CppCompilation compilation = compileTask.Result;
 
             if(compilation.HasErrors)
             {
@@ -66,18 +67,20 @@ namespace CppHeaderTool.Parser
             htModule.moduleName = moduleName;
             htModule.cppCompilation = compilation;
 
-            ParseChildren(compilation);
+            await ParseChildren(htModule, compilation);
 
             Session.typeTables.Add(htModule);
         }
 
-        private bool ParseMeta()
+        private async Task<bool> ParseMeta()
         {
-            return Parallel.ForEach(moduleFiles, file =>
+            await Parallel.ForEachAsync(moduleFiles, async (file, token) =>
             {
                 var parser = new MetaParser(file);
-                parser.Parse();
-            }).IsCompleted;
+                await parser.Parse();
+            });
+
+            return true;
         }
 
         private CppCompilation CompileHeaders()
@@ -93,30 +96,46 @@ namespace CppHeaderTool.Parser
             return compilation;
         }
 
-        private void ParseChildren(CppCompilation compilation)
+        private async Task ParseChildren(HtModule htModule, CppCompilation compilation)
         {
-            foreach (CppEnum cppClass in compilation.Enums)
-            {
-                var parser = new EnumParser(cppClass);
-                parser.Parse();
-            }
+            await Task.WhenAll(
+                this.ParseList(compilation.Enums).AsTask(),
+                this.ParseList(compilation.Classes).AsTask(),
+                this.ParseList(compilation.Functions).AsTask(),
+                this.ParseList(compilation.Fields).AsTask()
+            );
+
+            var typeTables = Session.typeTables;
 
             foreach (CppClass cppClass in compilation.Classes)
             {
-                var parser = new ClassParser(cppClass);
-                parser.Parse();
+                if (typeTables.TryGet(cppClass, out HtClass htClass))
+                {
+                    htModule.classes.Add(htClass);
+                }
             }
-
             foreach (CppFunction cppFunction in compilation.Functions)
             {
-                var parser = new FunctionParser(cppFunction);
-                parser.Parse();
+                if (typeTables.TryGet(cppFunction, out HtFunction htFunction))
+                {
+                    htModule.functions.Add(htFunction);
+                }
             }
 
             foreach (CppField cppField in compilation.Fields)
             {
-                var parser = new PropertyParser(cppField);
-                parser.Parse();
+                if (typeTables.TryGet(cppField, out HtProperty htProperty))
+                {
+                    htModule.properties.Add(htProperty);
+                }
+            }
+
+            foreach (CppEnum cppEnum in compilation.Enums)
+            {
+                if (typeTables.TryGet(cppEnum, out HtEnum htEnum))
+                {
+                    htModule.enums.Add(htEnum);
+                }
             }
         }
     }

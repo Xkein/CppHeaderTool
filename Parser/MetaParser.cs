@@ -28,10 +28,11 @@ namespace CppHeaderTool.Parser
             this.filePath = filePath;
         }
 
-        public override void Parse()
+        public override async ValueTask Parse()
         {
+            Console.WriteLine($"Parsing meta from file {filePath}");
             int curLine = 1;
-            IEnumerable<string> lines = File.ReadAllLines(filePath);
+            IEnumerable<string> lines = await File.ReadAllLinesAsync(filePath);
             foreach (string line in lines)
             {
                 ParseLine(line, curLine);

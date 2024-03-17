@@ -15,6 +15,7 @@ namespace CppHeaderTool.Types
 
         public List<HtFunction> functions;
         public List<HtProperty> properties;
+        public List<HtEnum> enums;
 
         public ClassMeta meta;
 

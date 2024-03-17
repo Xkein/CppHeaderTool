@@ -21,34 +21,37 @@ namespace CppHeaderTool.Parser
 
 
 
-        public override void Parse()
+        public override async ValueTask Parse()
         {
             HtClass htClass = new HtClass();
             htClass.cppClass = cppClass;
 
             this.ParseMeta(cppClass, metaData => ClassSpecifiers.ParseMeta(ref htClass.meta, metaData));
 
-            ParseChildren(htClass);
+            await ParseChildren(htClass);
 
             Session.typeTables.Add(htClass);
         }
 
-        private void ParseChildren(HtClass htClass)
+        private async Task ParseChildren(HtClass htClass)
         {
-            foreach (CppFunction cppFunction in cppClass.Functions)
-            {
-                var parser = new FunctionParser(cppFunction);
-                parser.Parse();
-            }
-
-            foreach (CppField cppField in cppClass.Fields)
-            {
-                var parser = new PropertyParser(cppField);
-                parser.Parse();
-            }
+            // this.ParseList(cppClass.Classes);
+            await Task.WhenAll(
+                this.ParseList(cppClass.Constructors).AsTask(),
+                this.ParseList(cppClass.Functions).AsTask(),
+                this.ParseList(cppClass.Fields).AsTask(),
+                this.ParseList(cppClass.Enums).AsTask()
+            );
 
             var typeTables = Session.typeTables;
 
+            foreach (CppFunction cppFunction in cppClass.Constructors)
+            {
+                if (typeTables.TryGet(cppFunction, out HtFunction htFunction))
+                {
+                    htClass.functions.Add(htFunction);
+                }
+            }
             foreach (CppFunction cppFunction in cppClass.Functions)
             {
                 if (typeTables.TryGet(cppFunction, out HtFunction htFunction))
@@ -65,6 +68,13 @@ namespace CppHeaderTool.Parser
                 }
             }
 
+            foreach (CppEnum cppEnum in cppClass.Enums)
+            {
+                if (typeTables.TryGet(cppEnum, out HtEnum htEnum))
+                {
+                    htClass.enums.Add(htEnum);
+                }
+            }
         }
     }
 }

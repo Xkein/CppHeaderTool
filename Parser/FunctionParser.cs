@@ -20,7 +20,7 @@ namespace CppHeaderTool.Parser
 
 
 
-        public override void Parse()
+        public override ValueTask Parse()
         {
             HtFunction htFunction = new HtFunction();
             htFunction.cppFunction = cppFunction;
@@ -28,6 +28,8 @@ namespace CppHeaderTool.Parser
             this.ParseMeta(cppFunction, metaData => FunctionSpecifiers.ParseMeta(ref htFunction.meta, metaData));
 
             Session.typeTables.Add(htFunction);
+
+            return ValueTask.CompletedTask;
         }
     }
 }

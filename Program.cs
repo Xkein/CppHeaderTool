@@ -20,20 +20,31 @@ namespace CppHeaderTool
                 return -1;
             }
 
-            string[] srcFiles = File.ReadAllLines(Session.config.source);
-            string[] includeFiles = File.ReadAllLines(Session.config.include);
-            string[] systemIncludeFiles = File.ReadAllLines(Session.config.systemInclude);
+            Task<int> task = MainTask();
+            return task.Result;
+        }
+
+        static async Task<int> MainTask()
+        {
+            string[][] files = await Task.WhenAll(
+                File.ReadAllLinesAsync(Session.config.source),
+                File.ReadAllLinesAsync(Session.config.include),
+                File.ReadAllLinesAsync(Session.config.systemInclude)
+            );
+            string[] srcFiles = files[1];
+            string[] includeFiles = files[2];
+            string[] systemIncludeFiles = files[3];
 
             ModuleParser moduleParser = new ModuleParser(Session.config.module, srcFiles, includeFiles, systemIncludeFiles);
-            moduleParser.Parse();
+            await moduleParser.Parse();
 
             if (Session.hasError)
             {
-                return -1;
+                return -1; 
             }
 
             ModuleCodeGenerator moduleCodeGenerator = new ModuleCodeGenerator(Session.config.module, Session.config.outDir);
-            moduleCodeGenerator.Generate();
+            await moduleCodeGenerator.Generate();
 
             if (Session.hasError)
             {

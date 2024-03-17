@@ -28,7 +28,7 @@ namespace CppHeaderTool.Parser
             _table = table;
         }
 
-        public override void Parse()
+        public override ValueTask Parse()
         {
             HtMetaData metaData = _specifierContext.metaData;
             foreach (string token in metaData.GetSpecifiers())
@@ -41,6 +41,8 @@ namespace CppHeaderTool.Parser
                     }
                 }
             }
+
+            return ValueTask.CompletedTask;
         }
 
         private bool TryParseValue(HtSpecifierType type, out object? value, string token)

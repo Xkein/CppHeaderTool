@@ -25,7 +25,7 @@ namespace CppHeaderTool.CodeGen
             this.outDir = outDir;
         }
 
-        public void Generate()
+        public async Task Generate()
         {
             if (!Session.typeTables.TryGet(moduleName, out _module))
             {
@@ -49,11 +49,11 @@ namespace CppHeaderTool.CodeGen
             {
                 if (Session.typeTables.TryGet(cppClass, out HtClass htClass))
                 {
-                    genTasks.Add(GenerateClass(htClass));
+                    genTasks.Add(GenerateClassAsync(htClass));
                 }
             }
 
-            Task.WhenAll(genTasks);
+            await Task.WhenAll(genTasks);
         }
 
         private async Task GenerateModuleAsync(HtModule module)
@@ -74,7 +74,7 @@ namespace CppHeaderTool.CodeGen
             });
         }
 
-        private async Task GenerateClass(HtClass htClass)
+        private async Task GenerateClassAsync(HtClass htClass)
         {
             await Session.templateManager.Generate(htClass, new[]
             {
