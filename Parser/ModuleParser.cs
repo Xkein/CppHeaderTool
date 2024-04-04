@@ -18,15 +18,25 @@ namespace CppHeaderTool.Parser
         public List<string> moduleFiles { get; private set; }
         public List<string> includeDirs { get; private set; }
         public List<string> systemIncludeDirs { get; private set; }
+        public List<string> defines { get; private set; }
+        public List<string> arguments { get; private set; }
 
         private CppParserOptions _parserOptions;
 
-        public ModuleParser(string moduleName, IEnumerable<string> moduleFiles, IEnumerable<string> includeDirs, IEnumerable<string> systemIncludeDirs)
+        public ModuleParser(
+            string moduleName,
+            IEnumerable<string> moduleFiles,
+            IEnumerable<string> includeDirs,
+            IEnumerable<string> systemIncludeDirs,
+            IEnumerable<string> defines,
+            IEnumerable<string> arguments)
         {
             this.moduleName = moduleName;
             this.moduleFiles = moduleFiles.ToList();
             this.includeDirs = includeDirs.ToList();
             this.systemIncludeDirs = systemIncludeDirs.ToList();
+            this.defines = defines.ToList();
+            this.arguments = arguments.ToList();
 
             _parserOptions = new CppParserOptions()
             {
@@ -34,26 +44,26 @@ namespace CppHeaderTool.Parser
                 ParseMacros = true,
                 AutoSquashTypedef = true,
             };
-            _parserOptions.Defines.AddRange(new List<string> {
-                "__HEADER_TOOL__",
-                "NDEBUG",
-            });
-            _parserOptions.AdditionalArguments.AddRange(new List<string> {
-                "-std=c++20",
-            });
+            _parserOptions.Defines.AddRange(defines);
+            _parserOptions.AdditionalArguments.AddRange(arguments);
             _parserOptions.IncludeFolders.AddRange(includeDirs);
             _parserOptions.SystemIncludeFolders.AddRange(systemIncludeDirs);
         }
 
         public override async ValueTask Parse()
         {
-            Console.WriteLine($"Parsing module {moduleName}");
+            Console.WriteLine($"Parsing module {moduleName} with info:");
+            Console.WriteLine($"moduleFiles: {string.Join(", ", moduleFiles)}");
+            Console.WriteLine($"includeDirs: {string.Join(", ", includeDirs)}");
+            Console.WriteLine($"systemIncludeDirs: {string.Join(", ", systemIncludeDirs)}");
+            Console.WriteLine($"defines: {string.Join(", ", defines)}");
+            Console.WriteLine($"arguments: {string.Join(", ", arguments)}");
 
             Task<CppCompilation> compileTask = Task.Run(CompileHeaders);
 
             if (!await ParseMeta())
             {
-                Session.hasError = false;
+                Session.hasError = true;
                 return;
             }
 
@@ -61,7 +71,7 @@ namespace CppHeaderTool.Parser
 
             if(compilation.HasErrors)
             {
-                Session.hasError = false;
+                Session.hasError = true;
                 return;
             }
 
@@ -90,6 +100,9 @@ namespace CppHeaderTool.Parser
             CppCompilation compilation = CppParser.ParseFiles(moduleFiles, _parserOptions);
             Session.compilation = compilation;
 
+            Console.WriteLine("CppCompilation input text:");
+            Console.WriteLine(compilation.InputText);
+            Console.WriteLine("Compiler messages:");
             foreach (CppDiagnosticMessage message in compilation.Diagnostics.Messages)
             {
                 Console.WriteLine(message);

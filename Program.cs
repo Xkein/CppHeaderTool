@@ -41,13 +41,17 @@ namespace CppHeaderTool
             string[][] files = await Task.WhenAll(
                 ReadFileAsync(Session.config.source),
                 ReadFileAsync(Session.config.include),
-                ReadFileAsync(Session.config.systemInclude)
+                ReadFileAsync(Session.config.systemInclude),
+                ReadFileAsync(Session.config.defines),
+                ReadFileAsync(Session.config.arguments)
             );
             string[] srcFiles = files[0];
             string[] includeFiles = files[1];
             string[] systemIncludeFiles = files[2];
+            string[] defines = files[3];
+            string[] arguments = files[4];
 
-            ModuleParser moduleParser = new ModuleParser(Session.config.module, srcFiles, includeFiles, systemIncludeFiles);
+            ModuleParser moduleParser = new ModuleParser(Session.config.module, srcFiles, includeFiles, systemIncludeFiles, defines, arguments);
             await moduleParser.Parse();
 
             if (Session.hasError)

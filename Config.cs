@@ -19,6 +19,11 @@ namespace CppHeaderTool
         [Option("sys_include")]
         public string systemInclude { get; set; }
 
+        [Option("defines")]
+        public string defines { get; set; }
+
+        [Option("arguments")]
+        public string arguments { get; set; }
 
         [Option("out_dir", Required = true)]
         public string outDir { get; set; }
