@@ -112,11 +112,16 @@ namespace CppHeaderTool.Templates
         private async static ValueTask WriteTemplateAsync(CodeTemplate template, TemplateContext context, string path)
         {
             string content = template.Render(context);
-            if (string.IsNullOrEmpty(content) == false)
+            if (!string.IsNullOrEmpty(content))
             {
+                string dir = Path.GetDirectoryName(path);
+                if (!Directory.Exists(dir))
+                {
+                    Directory.CreateDirectory(dir);
+                }
                 await File.WriteAllTextAsync(path, content);
+                Log.Information($"{path} generated!");
             }
-            Log.Information($"{path} generated!");
         }
     }
 }
