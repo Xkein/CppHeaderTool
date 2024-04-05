@@ -2,6 +2,7 @@
 using CppHeaderTool.Meta;
 using CppHeaderTool.Specifies;
 using CppHeaderTool.Types;
+using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -23,7 +24,7 @@ namespace CppHeaderTool.Parser
 
         public override async ValueTask Parse()
         {
-            Console.WriteLine($"Parsing class {cppClass.FullName}");
+            Log.Information($"Parsing class {cppClass.FullName}");
 
             HtClass htClass = new HtClass();
             htClass.cppClass = cppClass;

@@ -1,6 +1,7 @@
 ﻿using CppAst;
 using CppHeaderTool.Specifies;
 using CppHeaderTool.Types;
+using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -23,7 +24,7 @@ namespace CppHeaderTool.Parser
 
         public override ValueTask Parse()
         {
-            Console.WriteLine($"Parsing enum {cppEnum.FullName}");
+            Log.Information($"Parsing enum {cppEnum.FullName}");
 
             HtEnum htEnum = new HtEnum();
             htEnum.cppEnum = cppEnum;

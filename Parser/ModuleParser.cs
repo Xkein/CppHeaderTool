@@ -3,6 +3,7 @@ using CppHeaderTool.Specifies;
 using CppHeaderTool.Tables;
 using CppHeaderTool.Types;
 using Scriban.Parsing;
+using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -40,6 +41,7 @@ namespace CppHeaderTool.Parser
 
             _parserOptions = new CppParserOptions()
             {
+                ParseTokenAttributes = true,
                 ParseAsCpp = true,
                 ParseMacros = true,
                 AutoSquashTypedef = true,
@@ -52,12 +54,12 @@ namespace CppHeaderTool.Parser
 
         public override async ValueTask Parse()
         {
-            Console.WriteLine($"Parsing module {moduleName} with info:");
-            Console.WriteLine($"moduleFiles: {string.Join(", ", moduleFiles)}");
-            Console.WriteLine($"includeDirs: {string.Join(", ", includeDirs)}");
-            Console.WriteLine($"systemIncludeDirs: {string.Join(", ", systemIncludeDirs)}");
-            Console.WriteLine($"defines: {string.Join(", ", defines)}");
-            Console.WriteLine($"arguments: {string.Join(", ", arguments)}");
+            Log.Information($"Parsing module {moduleName} with info:");
+            Log.Information($"moduleFiles: {string.Join(", ", moduleFiles)}");
+            Log.Information($"includeDirs: {string.Join(", ", includeDirs)}");
+            Log.Information($"systemIncludeDirs: {string.Join(", ", systemIncludeDirs)}");
+            Log.Information($"defines: {string.Join(", ", defines)}");
+            Log.Information($"arguments: {string.Join(", ", arguments)}");
 
             Task<CppCompilation> compileTask = Task.Run(CompileHeaders);
 
@@ -100,12 +102,23 @@ namespace CppHeaderTool.Parser
             CppCompilation compilation = CppParser.ParseFiles(moduleFiles, _parserOptions);
             Session.compilation = compilation;
 
-            Console.WriteLine("CppCompilation input text:");
-            Console.WriteLine(compilation.InputText);
-            Console.WriteLine("Compiler messages:");
+            Log.Information($"CppCompilation input text:{Environment.NewLine}{compilation.InputText}");
+            Log.Information("Compiler messages:");
             foreach (CppDiagnosticMessage message in compilation.Diagnostics.Messages)
             {
-                Console.WriteLine(message);
+                string msg = message.ToString();
+                switch (message.Type)
+                {
+                    case CppLogMessageType.Warning:
+                        Log.Warning(msg);
+                        break;
+                    case CppLogMessageType.Error:
+                        Log.Error(msg);
+                        break;
+                    default:
+                        Log.Information(msg);
+                        break;
+                }
             }
 
             return compilation;

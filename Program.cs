@@ -3,6 +3,7 @@ using CommandLine;
 using CppHeaderTool.CodeGen;
 using CppHeaderTool.Parser;
 using Scriban.Runtime.Accessors;
+using Serilog;
 using System.Diagnostics;
 
 namespace CppHeaderTool
@@ -11,19 +12,30 @@ namespace CppHeaderTool
     {
         static int Main(string[] args)
         {
-            Console.WriteLine("CppHeaderTool command line: " + string.Join(' ', args));
+            string commandLine = "CppHeaderTool command line: " + string.Join(' ', args);
             ParserResult<Config> result = CommandLine.Parser.Default.ParseArguments<Config>(args).WithParsed(config =>
             {
                 Session.config = config;
             });
-
             if (result.Tag == ParserResultType.NotParsed)
             {
+                Console.WriteLine(commandLine);
                 return -1;
             }
 
+            CreateLogger();
+            Log.Information(commandLine);
+
             Task<int> task = MainTask();
             return task.Result;
+        }
+
+        static void CreateLogger()
+        {
+            Log.Logger = new LoggerConfiguration()
+                .WriteTo.Console()
+                .WriteTo.File(Path.Combine(Session.config.outDir, "CppHeaderTool.Log.txt"))
+                .CreateLogger();
         }
 
         static async Task<string[]> ReadFileAsync(string path)

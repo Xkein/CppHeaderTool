@@ -1,6 +1,7 @@
 ﻿using CppAst;
 using CppHeaderTool.Specifies;
 using CppHeaderTool.Types;
+using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -22,7 +23,7 @@ namespace CppHeaderTool.Parser
 
         public override ValueTask Parse()
         {
-            Console.WriteLine($"Parsing function {cppFunction.FullParentName}.{cppFunction.Name}");
+            Log.Information($"Parsing function {cppFunction.FullParentName}.{cppFunction.Name}");
 
             HtFunction htFunction = new HtFunction();
             htFunction.cppFunction = cppFunction;

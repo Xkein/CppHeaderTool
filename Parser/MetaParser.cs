@@ -2,6 +2,7 @@
 using CppHeaderTool.Specifies;
 using CppHeaderTool.Tables;
 using CppHeaderTool.Utils;
+using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -30,7 +31,7 @@ namespace CppHeaderTool.Parser
 
         public override async ValueTask Parse()
         {
-            Console.WriteLine($"Parsing meta from file {filePath}");
+            Log.Information($"Parsing meta from file {filePath}");
             int curLine = 1;
             IEnumerable<string> lines = await File.ReadAllLinesAsync(filePath);
             foreach (string line in lines)

@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Scriban.Parsing;
+using Serilog;
 
 namespace CppHeaderTool.Templates
 {
@@ -38,7 +39,7 @@ namespace CppHeaderTool.Templates
 
             public async Task ReadTemplate(string filePath)
             {
-                Console.WriteLine($"loading code template {filePath}");
+                Log.Information($"loading code template {filePath}");
                 templateText = await File.ReadAllTextAsync(filePath);
                 template = Template.Parse(templateText);
             }
@@ -115,7 +116,7 @@ namespace CppHeaderTool.Templates
             {
                 await File.WriteAllTextAsync(path, content);
             }
-            Console.WriteLine($"{path} generated!");
+            Log.Information($"{path} generated!");
         }
     }
 }
