@@ -22,5 +22,6 @@ namespace CppHeaderTool
         public static TemplateManager templateManager { get; } = new TemplateManager();
 
         public static bool hasError { get; set; }
+        public static string outDir { get; set; }
     }
 }

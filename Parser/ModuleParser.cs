@@ -13,6 +13,15 @@ using System.Threading.Tasks;
 
 namespace CppHeaderTool.Parser
 {
+    public class ModuleParseInfo
+    {
+        public string moduleName;
+        public IEnumerable<string> moduleFiles;
+        public IEnumerable<string> includeDirs;
+        public IEnumerable<string> systemIncludeDirs;
+        public IEnumerable<string> defines;
+        public IEnumerable<string> arguments;
+    }
     internal class ModuleParser : ParserBase
     {
         public string moduleName { get; private set; }
@@ -24,21 +33,8 @@ namespace CppHeaderTool.Parser
 
         private CppParserOptions _parserOptions;
 
-        public ModuleParser(
-            string moduleName,
-            IEnumerable<string> moduleFiles,
-            IEnumerable<string> includeDirs,
-            IEnumerable<string> systemIncludeDirs,
-            IEnumerable<string> defines,
-            IEnumerable<string> arguments)
+        public ModuleParser(ModuleParseInfo info)
         {
-            this.moduleName = moduleName;
-            this.moduleFiles = moduleFiles.ToList();
-            this.includeDirs = includeDirs.ToList();
-            this.systemIncludeDirs = systemIncludeDirs.ToList();
-            this.defines = defines.ToList();
-            this.arguments = arguments.ToList();
-
             _parserOptions = new CppParserOptions()
             {
                 ParseTokenAttributes = true,
@@ -46,15 +42,42 @@ namespace CppHeaderTool.Parser
                 ParseMacros = true,
                 AutoSquashTypedef = true,
             };
-            _parserOptions.Defines.AddRange(defines);
-            _parserOptions.AdditionalArguments.AddRange(arguments);
-            _parserOptions.IncludeFolders.AddRange(includeDirs);
-            _parserOptions.SystemIncludeFolders.AddRange(systemIncludeDirs);
+            
+            if (!string.IsNullOrEmpty(Session.config.targetAbi))
+                _parserOptions.TargetAbi = Session.config.targetAbi;
+
+            if (!string.IsNullOrEmpty(Session.config.targetSystem))
+                _parserOptions.TargetSystem = Session.config.targetSystem;
+
+            if (!string.IsNullOrEmpty(Session.config.targetVendor))
+                _parserOptions.TargetVendor = Session.config.targetVendor;
+
+            if (!string.IsNullOrEmpty(Session.config.targetCpuSub))
+                _parserOptions.TargetCpuSub = Session.config.targetCpuSub;
+
+            if (Enum.TryParse(Session.config.targetCpu, out CppTargetCpu targetCpu))
+                _parserOptions.TargetCpu = targetCpu;
+
+            if (Session.config.isWindowsMsvc)
+                _parserOptions = _parserOptions.ConfigureForWindowsMsvc(_parserOptions.TargetCpu);
+
+            _parserOptions.Defines.AddRange(info.defines);
+            _parserOptions.AdditionalArguments.AddRange(info.arguments);
+            _parserOptions.IncludeFolders.AddRange(info.includeDirs);
+            _parserOptions.SystemIncludeFolders.AddRange(info.systemIncludeDirs);
+
+            moduleName = info.moduleName;
+            moduleFiles = info.moduleFiles.ToList();
+            includeDirs = _parserOptions.IncludeFolders;
+            systemIncludeDirs = _parserOptions.SystemIncludeFolders;
+            defines = _parserOptions.Defines;
+            arguments = _parserOptions.AdditionalArguments;
+
         }
 
         public override async ValueTask Parse()
         {
-            Log.Information($"Parsing module {moduleName} with info:");
+            Log.Information($"Parsing module {moduleName}");
             Log.Information($"moduleFiles: {string.Join(", ", moduleFiles)}");
             Log.Information($"includeDirs: {string.Join(", ", includeDirs)}");
             Log.Information($"systemIncludeDirs: {string.Join(", ", systemIncludeDirs)}");
@@ -80,6 +103,10 @@ namespace CppHeaderTool.Parser
             HtModule htModule = new HtModule();
             htModule.moduleName = moduleName;
             htModule.cppCompilation = compilation;
+            htModule.classes = new List<HtClass>();
+            htModule.functions = new List<HtFunction>();
+            htModule.properties = new List<HtProperty>();
+            htModule.enums = new List<HtEnum>();
 
             await ParseChildren(htModule, compilation);
 
@@ -88,6 +115,7 @@ namespace CppHeaderTool.Parser
 
         private async Task<bool> ParseMeta()
         {
+            Log.Information($"Parsing meta from files...");
             await Parallel.ForEachAsync(moduleFiles, async (file, token) =>
             {
                 var parser = new MetaParser(file);
@@ -99,10 +127,10 @@ namespace CppHeaderTool.Parser
 
         private CppCompilation CompileHeaders()
         {
+            Log.Information($"compiling...");
             CppCompilation compilation = CppParser.ParseFiles(moduleFiles, _parserOptions);
             Session.compilation = compilation;
 
-            Log.Information($"CppCompilation input text:{Environment.NewLine}{compilation.InputText}");
             Log.Information("Compiler messages:");
             foreach (CppDiagnosticMessage message in compilation.Diagnostics.Messages)
             {

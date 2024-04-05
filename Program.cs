@@ -2,7 +2,8 @@
 using CommandLine;
 using CppHeaderTool.CodeGen;
 using CppHeaderTool.Parser;
-using Scriban.Runtime.Accessors;
+using Newtonsoft.Json;
+using Scriban.Parsing;
 using Serilog;
 using System.Diagnostics;
 
@@ -10,18 +11,36 @@ namespace CppHeaderTool
 {
     public class Program
     {
+        class CmdLineArgs
+        {
+            [Option("config", Required = true)]
+            public string config { get; set; }
+
+            [Option("out_dir", Required = true)]
+            public string outDir { get; set; }
+        }
         static int Main(string[] args)
         {
             string commandLine = "CppHeaderTool command line: " + string.Join(' ', args);
-            ParserResult<Config> result = CommandLine.Parser.Default.ParseArguments<Config>(args).WithParsed(config =>
-            {
-                Session.config = config;
-            });
+            ParserResult<CmdLineArgs> result = CommandLine.Parser.Default.ParseArguments<CmdLineArgs>(args);
             if (result.Tag == ParserResultType.NotParsed)
             {
                 Console.WriteLine(commandLine);
                 return -1;
             }
+
+            CmdLineArgs cmdLineArgs = result.Value;
+            string outDir = cmdLineArgs.outDir;
+            if (!Directory.Exists(outDir)) {
+                Directory.CreateDirectory(outDir);
+            }
+            string configPath = cmdLineArgs.config;
+            if (!File.Exists(configPath))
+            {
+                Log.Error($"could not find config {configPath}");
+            }
+            Session.outDir = outDir;
+            Session.config = JsonConvert.DeserializeObject<Config>(File.ReadAllText(configPath));
 
             CreateLogger();
             Log.Information(commandLine);
@@ -34,7 +53,7 @@ namespace CppHeaderTool
         {
             Log.Logger = new LoggerConfiguration()
                 .WriteTo.Console()
-                .WriteTo.File(Path.Combine(Session.config.outDir, "CppHeaderTool.Log.txt"))
+                .WriteTo.File(Path.Combine(Session.outDir, "CppHeaderTool.Log.txt"))
                 .CreateLogger();
         }
 
@@ -50,20 +69,17 @@ namespace CppHeaderTool
 
         static async Task<int> MainTask()
         {
-            string[][] files = await Task.WhenAll(
-                ReadFileAsync(Session.config.source),
-                ReadFileAsync(Session.config.include),
-                ReadFileAsync(Session.config.systemInclude),
-                ReadFileAsync(Session.config.defines),
-                ReadFileAsync(Session.config.arguments)
-            );
-            string[] srcFiles = files[0];
-            string[] includeFiles = files[1];
-            string[] systemIncludeFiles = files[2];
-            string[] defines = files[3];
-            string[] arguments = files[4];
+            ModuleParseInfo moduleParseInfo = new ModuleParseInfo()
+            {
+                moduleName = Session.config.moduleName,
+                moduleFiles = Session.config.headerFiles,
+                includeDirs = Session.config.includeDirs,
+                systemIncludeDirs = Session.config.systemIncludeDirs,
+                defines = Session.config.defines,
+                arguments = Session.config.arguments,
+            };
 
-            ModuleParser moduleParser = new ModuleParser(Session.config.module, srcFiles, includeFiles, systemIncludeFiles, defines, arguments);
+            ModuleParser moduleParser = new ModuleParser(moduleParseInfo);
             await moduleParser.Parse();
 
             if (Session.hasError)
@@ -71,7 +87,7 @@ namespace CppHeaderTool
                 return -1; 
             }
 
-            ModuleCodeGenerator moduleCodeGenerator = new ModuleCodeGenerator(Session.config.module, Session.config.outDir);
+            ModuleCodeGenerator moduleCodeGenerator = new ModuleCodeGenerator(moduleParseInfo.moduleName, Session.outDir);
             await moduleCodeGenerator.Generate();
 
             if (Session.hasError)

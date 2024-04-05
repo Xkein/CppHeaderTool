@@ -31,7 +31,6 @@ namespace CppHeaderTool.Parser
 
         public override async ValueTask Parse()
         {
-            Log.Information($"Parsing meta from file {filePath}");
             int curLine = 1;
             IEnumerable<string> lines = await File.ReadAllLinesAsync(filePath);
             foreach (string line in lines)

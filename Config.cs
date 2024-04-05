@@ -1,31 +1,30 @@
-﻿using CommandLine;
+﻿
+using CppAst;
 
 namespace CppHeaderTool
 {
     internal class Config
     {
-        [Option("template", Required = true)]
-        public string template { get; set; }
+        public string templateDir { get; set; }
 
-        [Option("module", Required = true)]
-        public string module { get; set; }
+        public string moduleName { get; set; }
 
-        [Option("source", Required = true)]
-        public string source { get; set; }
+        public string[] headerFiles { get; set; }
 
-        [Option("include")]
-        public string include { get; set; }
+        public string[] includeDirs { get; set; }
 
-        [Option("sys_include")]
-        public string systemInclude { get; set; }
+        public string[] systemIncludeDirs { get; set; }
 
-        [Option("defines")]
-        public string defines { get; set; }
+        public string[] defines { get; set; }
 
-        [Option("arguments")]
-        public string arguments { get; set; }
+        public string[] arguments { get; set; }
 
-        [Option("out_dir", Required = true)]
-        public string outDir { get; set; }
+        // CppParserOptions
+        public bool isWindowsMsvc { get; set; }
+        public string targetAbi { get; set; }
+        public string targetSystem { get; set; }
+        public string targetVendor { get; set; }
+        public string targetCpuSub { get; set; }
+        public string targetCpu { get; set; }
     }
 }

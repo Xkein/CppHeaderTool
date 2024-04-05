@@ -58,7 +58,7 @@ namespace CppHeaderTool.Templates
             }
 
             template = new CodeTemplate();
-            await template.ReadTemplate(Path.Combine(Session.config.template, path));
+            await template.ReadTemplate(Path.Combine(Session.config.templateDir, path));
             _templates[path] = template;
 
             return template;

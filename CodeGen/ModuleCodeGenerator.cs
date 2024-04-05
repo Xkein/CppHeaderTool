@@ -60,8 +60,8 @@ namespace CppHeaderTool.CodeGen
         {
             await Session.templateManager.Generate(module, new[]
             {
-                new TemplateGenerateInfo("module_header.scriban", Path.Combine(Session.config.outDir, "module", module.moduleName + ".h")),
-                new TemplateGenerateInfo("module_cpp.scriban", Path.Combine(Session.config.outDir, "module", module.moduleName + ".cpp")),
+                new TemplateGenerateInfo("module_header.scriban", Path.Combine(Session.outDir, "module", module.moduleName + ".h")),
+                new TemplateGenerateInfo("module_cpp.scriban", Path.Combine(Session.outDir, "module", module.moduleName + ".cpp")),
             });
         }
 
@@ -69,8 +69,8 @@ namespace CppHeaderTool.CodeGen
         {
             await Session.templateManager.Generate(htEnum, new[]
             {
-                new TemplateGenerateInfo("enum_header.scriban", Path.Combine(Session.config.outDir, "enum", htEnum.cppEnum.Name + ".h")),
-                new TemplateGenerateInfo("enum_cpp.scriban", Path.Combine(Session.config.outDir, "enum", htEnum.cppEnum.Name + ".cpp")),
+                new TemplateGenerateInfo("enum_header.scriban", Path.Combine(Session.outDir, "enum", htEnum.cppEnum.Name + ".h")),
+                new TemplateGenerateInfo("enum_cpp.scriban", Path.Combine(Session.outDir, "enum", htEnum.cppEnum.Name + ".cpp")),
             });
         }
 
@@ -78,8 +78,8 @@ namespace CppHeaderTool.CodeGen
         {
             await Session.templateManager.Generate(htClass, new[]
             {
-                new TemplateGenerateInfo("class_header.scriban", Path.Combine(Session.config.outDir, "class", htClass.cppClass.Name + ".h")),
-                new TemplateGenerateInfo("class_cpp.scriban", Path.Combine(Session.config.outDir, "class", htClass.cppClass.Name + ".cpp")),
+                new TemplateGenerateInfo("class_header.scriban", Path.Combine(Session.outDir, "class", htClass.cppClass.Name + ".h")),
+                new TemplateGenerateInfo("class_cpp.scriban", Path.Combine(Session.outDir, "class", htClass.cppClass.Name + ".cpp")),
             });
         }
     }
