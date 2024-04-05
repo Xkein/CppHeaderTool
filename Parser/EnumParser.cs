@@ -24,10 +24,11 @@ namespace CppHeaderTool.Parser
 
         public override ValueTask Parse()
         {
-            Log.Information($"Parsing enum {cppEnum.FullName}");
+            Log.Verbose($"Parsing enum {cppEnum.FullName}");
 
             HtEnum htEnum = new HtEnum();
             htEnum.cppEnum = cppEnum;
+            htEnum.constants = new List<HtEnumConstant>();
 
             this.ParseMeta(cppEnum, metaData => EnumSpecifiers.ParseMeta(ref htEnum.meta, metaData));
 

@@ -21,6 +21,7 @@ namespace CppHeaderTool
 
         // CppParserOptions
         public bool isWindowsMsvc { get; set; }
+        public bool isParseSystemIncludes { get; set; } = true;
         public string targetAbi { get; set; }
         public string targetSystem { get; set; }
         public string targetVendor { get; set; }

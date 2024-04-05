@@ -8,16 +8,19 @@ using System.Text;
 using System.Threading.Tasks;
 using Scriban.Parsing;
 using Serilog;
+using System.Threading;
 
 namespace CppHeaderTool.Templates
 {
     struct TemplateGenerateInfo
     {
+        public object importObject;
         public string template;
         public string outputPath;
 
-        public TemplateGenerateInfo(string template, string outputPath)
+        public TemplateGenerateInfo(object importObject, string template, string outputPath)
         {
+            this.importObject = importObject;
             this.template = template;
             this.outputPath = outputPath;
         }
@@ -40,16 +43,50 @@ namespace CppHeaderTool.Templates
             public async Task ReadTemplate(string filePath)
             {
                 Log.Information($"loading code template {filePath}");
-                templateText = await File.ReadAllTextAsync(filePath);
-                template = Template.Parse(templateText);
+                try
+                {
+                    templateText = await File.ReadAllTextAsync(filePath);
+                    template = Template.Parse(templateText);
+                    if (template.HasErrors)
+                    {
+                        Log.Error($"template error from path: {filePath}");
+                        foreach (LogMessage message in template.Messages)
+                        {
+                            string msg = message.ToString();
+                            switch (message.Type)
+                            {
+                                case ParserMessageType.Error:
+                                    Log.Error(msg);
+                                    break;
+                                case ParserMessageType.Warning:
+                                    Log.Warning(msg);
+                                    break;
+                            }
+                        }
+                    }
+                }
+                catch (Exception e)
+                {
+                    Log.Error(e, "error loading code template!");
+                    throw;
+                }
             }
 
             public string Render(TemplateContext context)
             {
-                return template.Render(context);
+                try
+                {
+                    return template.Render(context);
+                }
+                catch (Exception e)
+                {
+                    Log.Error(e, "error rendering code template!");
+                    return e.ToString();
+                }
             }
         }
 
+        SemaphoreSlim _semaphoreSlim = new SemaphoreSlim(1, 1);
         private async ValueTask<CodeTemplate> GetTemplateAsync(string path)
         {
             if (_templates.TryGetValue(path, out CodeTemplate template))
@@ -57,9 +94,21 @@ namespace CppHeaderTool.Templates
                 return template;
             }
 
-            template = new CodeTemplate();
-            await template.ReadTemplate(Path.Combine(Session.config.templateDir, path));
-            _templates[path] = template;
+            await _semaphoreSlim.WaitAsync();
+            try
+            {
+                if (_templates.TryGetValue(path, out template))
+                {
+                    return template;
+                }
+                template = new CodeTemplate();
+                await template.ReadTemplate(Path.Combine(Session.config.templateDir, path));
+                _templates[path] = template;
+            }
+            finally
+            {
+                _semaphoreSlim.Release();
+            }
 
             return template;
         }
@@ -88,38 +137,45 @@ namespace CppHeaderTool.Templates
         }
 
 
-        public async Task Generate(object importObject, TemplateGenerateInfo[] infos)
+        public async Task Generate(TemplateGenerateInfo info)
         {
             var templateContext = new TemplateContext();
             var scriptObject = new ScriptObject();
-            scriptObject.Import(importObject);
+            scriptObject.Import(info.importObject);
 
+            templateContext.TemplateLoader = this;
             templateContext.PushGlobal(scriptObject);
 
-            List<Task> tasks = new List<Task>();
-            foreach (TemplateGenerateInfo info in infos)
-            {
-                CodeTemplate template = await GetTemplateAsync(info.template);
-                ValueTask task = WriteTemplateAsync(template, templateContext, info.outputPath);
-                if (!task.IsCompletedSuccessfully)
-                {
-                    tasks.Add(task.AsTask());
-                }
-            }
-            await Task.WhenAll(tasks);
+            CodeTemplate template = await GetTemplateAsync(info.template);
+            await WriteTemplateAsync(template, templateContext, info.outputPath);
         }
 
         private async static ValueTask WriteTemplateAsync(CodeTemplate template, TemplateContext context, string path)
         {
             string content = template.Render(context);
-            if (!string.IsNullOrEmpty(content))
+            bool isFileExist = File.Exists(path);
+            if (string.IsNullOrEmpty(content))
+            {
+                if (isFileExist)
+                {
+                    File.Delete(path);
+                }
+            }
+            else
             {
                 string dir = Path.GetDirectoryName(path);
                 if (!Directory.Exists(dir))
                 {
                     Directory.CreateDirectory(dir);
                 }
-                await File.WriteAllTextAsync(path, content);
+                string oldContent = "";
+                if (isFileExist) {
+                    oldContent = await File.ReadAllTextAsync(path);
+                }
+                if (oldContent != content)
+                {
+                    await File.WriteAllTextAsync(path, content);
+                }
                 Log.Information($"{path} generated!");
             }
         }

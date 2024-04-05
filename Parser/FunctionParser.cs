@@ -23,7 +23,7 @@ namespace CppHeaderTool.Parser
 
         public override ValueTask Parse()
         {
-            Log.Information($"Parsing function {cppFunction.FullParentName}.{cppFunction.Name}");
+            //Log.Information($"Parsing function {cppFunction.FullParentName}.{cppFunction}");
 
             HtFunction htFunction = new HtFunction();
             htFunction.cppFunction = cppFunction;

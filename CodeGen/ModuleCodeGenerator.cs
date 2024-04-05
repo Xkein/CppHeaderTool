@@ -1,14 +1,9 @@
 ﻿using CppAst;
 using CppHeaderTool.Templates;
 using CppHeaderTool.Types;
-using Scriban.Runtime;
-using Scriban;
+using Serilog;
+using ShellProgressBar;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace CppHeaderTool.CodeGen
 {
@@ -27,60 +22,52 @@ namespace CppHeaderTool.CodeGen
 
         public async Task Generate()
         {
+            Log.Information($"Generating module {moduleName}");
             if (!Session.typeTables.TryGet(moduleName, out _module))
             {
                 return;
             }
             CppCompilation compilation = _module.cppCompilation;
 
-            List<Task> genTasks = new List<Task>();
+            List<TemplateGenerateInfo> generateInfos = new List<TemplateGenerateInfo>(100);
 
-            genTasks.Add(GenerateModuleAsync(_module));
-
-            foreach (CppEnum cppEnum in compilation.Enums)
-            {
-                if(Session.typeTables.TryGet(cppEnum, out HtEnum htEnum))
-                {
-                    genTasks.Add(GenerateEnumAsync(htEnum));
-                }
-            }
+            AddGenerateInfo(generateInfos, _module, "module_header.scriban", $"module/{_module.moduleName}.h");
+            AddGenerateInfo(generateInfos, _module, "module_cpp.scriban",    $"module/{_module.moduleName}.cpp");
 
             foreach (CppClass cppClass in compilation.Classes)
             {
                 if (Session.typeTables.TryGet(cppClass, out HtClass htClass))
                 {
-                    genTasks.Add(GenerateClassAsync(htClass));
+                    AddGenerateInfo(generateInfos, htClass, "class_header.scriban", $"class/{htClass.cppClass.Name}.h");
+                    AddGenerateInfo(generateInfos, htClass, "class_cpp.scriban",    $"class/{htClass.cppClass.Name}.cpp");
                 }
             }
 
-            await Task.WhenAll(genTasks);
+            foreach (CppEnum cppEnum in compilation.Enums)
+            {
+                if (Session.typeTables.TryGet(cppEnum, out HtEnum htEnum))
+                {
+                    AddGenerateInfo(generateInfos, htEnum, "enum_header.scriban", $"enum/{htEnum.cppEnum.Name}.h");
+                    AddGenerateInfo(generateInfos, htEnum, "enum_cpp.scriban",    $"enum/{htEnum.cppEnum.Name}.cpp");
+                }
+            }
+
+            Log.Information($"Generating {generateInfos.Count} code file in module {moduleName}...");
+
+            var pbarOption = new ProgressBarOptions() { DisplayTimeInRealTime = false, ProgressBarOnBottom = true };
+            using var pbar = new ProgressBar(generateInfos.Count, "Generating code from template...", pbarOption);
+            await Parallel.ForEachAsync(generateInfos, async (TemplateGenerateInfo info, CancellationToken token) =>
+            {
+                await Session.templateManager.Generate(info);
+                pbar.Tick();
+            });
+
+            Log.Information($"Generated module {moduleName}");
         }
 
-        private async Task GenerateModuleAsync(HtModule module)
+        private void AddGenerateInfo(List<TemplateGenerateInfo> list, object importObject, string template, string outputPath)
         {
-            await Session.templateManager.Generate(module, new[]
-            {
-                new TemplateGenerateInfo("module_header.scriban", Path.Combine(Session.outDir, "module", module.moduleName + ".h")),
-                new TemplateGenerateInfo("module_cpp.scriban", Path.Combine(Session.outDir, "module", module.moduleName + ".cpp")),
-            });
-        }
-
-        private async Task GenerateEnumAsync(HtEnum htEnum)
-        {
-            await Session.templateManager.Generate(htEnum, new[]
-            {
-                new TemplateGenerateInfo("enum_header.scriban", Path.Combine(Session.outDir, "enum", htEnum.cppEnum.Name + ".h")),
-                new TemplateGenerateInfo("enum_cpp.scriban", Path.Combine(Session.outDir, "enum", htEnum.cppEnum.Name + ".cpp")),
-            });
-        }
-
-        private async Task GenerateClassAsync(HtClass htClass)
-        {
-            await Session.templateManager.Generate(htClass, new[]
-            {
-                new TemplateGenerateInfo("class_header.scriban", Path.Combine(Session.outDir, "class", htClass.cppClass.Name + ".h")),
-                new TemplateGenerateInfo("class_cpp.scriban", Path.Combine(Session.outDir, "class", htClass.cppClass.Name + ".cpp")),
-            });
+            list.Add(new TemplateGenerateInfo(importObject, template, Path.Combine(Session.outDir, outputPath)));
         }
     }
 }

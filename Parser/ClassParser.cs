@@ -24,10 +24,13 @@ namespace CppHeaderTool.Parser
 
         public override async ValueTask Parse()
         {
-            Log.Information($"Parsing class {cppClass.FullName}");
+            Log.Verbose($"Parsing class {cppClass.FullName}");
 
             HtClass htClass = new HtClass();
             htClass.cppClass = cppClass;
+            htClass.functions = new List<HtFunction>();
+            htClass.properties = new List<HtProperty>();
+            htClass.enums = new List<HtEnum>();
 
             this.ParseMeta(cppClass, metaData => ClassSpecifiers.ParseMeta(ref htClass.meta, metaData));
 

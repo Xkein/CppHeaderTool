@@ -5,6 +5,7 @@ using CppHeaderTool.Parser;
 using Newtonsoft.Json;
 using Scriban.Parsing;
 using Serilog;
+using Serilog.Events;
 using System.Diagnostics;
 
 namespace CppHeaderTool
@@ -18,6 +19,9 @@ namespace CppHeaderTool
 
             [Option("out_dir", Required = true)]
             public string outDir { get; set; }
+
+            [Option("log_level")]
+            public LogEventLevel logLevel { get; set; } = LogEventLevel.Information;
         }
         static int Main(string[] args)
         {
@@ -34,26 +38,29 @@ namespace CppHeaderTool
             if (!Directory.Exists(outDir)) {
                 Directory.CreateDirectory(outDir);
             }
+
+            CreateLogger(cmdLineArgs);
+            Log.Information(commandLine);
+
             string configPath = cmdLineArgs.config;
             if (!File.Exists(configPath))
             {
                 Log.Error($"could not find config {configPath}");
+                return -1;
             }
             Session.outDir = outDir;
             Session.config = JsonConvert.DeserializeObject<Config>(File.ReadAllText(configPath));
-
-            CreateLogger();
-            Log.Information(commandLine);
 
             Task<int> task = MainTask();
             return task.Result;
         }
 
-        static void CreateLogger()
+        static void CreateLogger(CmdLineArgs args)
         {
             Log.Logger = new LoggerConfiguration()
                 .WriteTo.Console()
-                .WriteTo.File(Path.Combine(Session.outDir, "CppHeaderTool.Log.txt"))
+                .WriteTo.File(Path.Combine(args.outDir, "CppHeaderTool.Log.txt"))
+                .MinimumLevel.Is(args.logLevel)
                 .CreateLogger();
         }
 
@@ -69,6 +76,8 @@ namespace CppHeaderTool
 
         static async Task<int> MainTask()
         {
+            Stopwatch stopwatch = Stopwatch.StartNew();
+
             ModuleParseInfo moduleParseInfo = new ModuleParseInfo()
             {
                 moduleName = Session.config.moduleName,
@@ -94,6 +103,9 @@ namespace CppHeaderTool
             {
                 return -1;
             }
+
+            stopwatch.Stop();
+            Log.Information($"Generate time: {stopwatch.Elapsed}");
 
             return 0;
         }

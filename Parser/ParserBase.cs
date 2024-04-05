@@ -18,6 +18,9 @@ namespace CppHeaderTool.Parser
     {
         public static void ParseMeta(this ParserBase parser, CppElement element, Action<HtMetaData> parseFunc)
         {
+            if (element.SourceFile == null)
+                return;
+
             CppSourceLocation sourceLocation = element.Span.Start;
             if (!Session.metaTables.Tables.TryGetValue(sourceLocation.File, out var metaTable))
                 return;

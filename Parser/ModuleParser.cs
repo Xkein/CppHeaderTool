@@ -1,15 +1,8 @@
 ﻿using CppAst;
-using CppHeaderTool.Specifies;
-using CppHeaderTool.Tables;
 using CppHeaderTool.Types;
-using Scriban.Parsing;
+using Newtonsoft.Json;
 using Serilog;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
+using ShellProgressBar;
 
 namespace CppHeaderTool.Parser
 {
@@ -41,7 +34,9 @@ namespace CppHeaderTool.Parser
                 ParseAsCpp = true,
                 ParseMacros = true,
                 AutoSquashTypedef = true,
-            };
+            }.EnableMacros();
+
+            _parserOptions.ParseSystemIncludes = Session.config.isParseSystemIncludes;
             
             if (!string.IsNullOrEmpty(Session.config.targetAbi))
                 _parserOptions.TargetAbi = Session.config.targetAbi;
@@ -79,10 +74,7 @@ namespace CppHeaderTool.Parser
         {
             Log.Information($"Parsing module {moduleName}");
             Log.Information($"moduleFiles: {string.Join(", ", moduleFiles)}");
-            Log.Information($"includeDirs: {string.Join(", ", includeDirs)}");
-            Log.Information($"systemIncludeDirs: {string.Join(", ", systemIncludeDirs)}");
-            Log.Information($"defines: {string.Join(", ", defines)}");
-            Log.Information($"arguments: {string.Join(", ", arguments)}");
+            Log.Information($"ParserOptions: {JsonConvert.SerializeObject(_parserOptions, Formatting.Indented)}");
 
             Task<CppCompilation> compileTask = Task.Run(CompileHeaders);
 
@@ -92,6 +84,7 @@ namespace CppHeaderTool.Parser
                 return;
             }
 
+            Log.Information("Waiting compile result...");
             CppCompilation compilation = compileTask.Result;
 
             if(compilation.HasErrors)
@@ -115,12 +108,17 @@ namespace CppHeaderTool.Parser
 
         private async Task<bool> ParseMeta()
         {
-            Log.Information($"Parsing meta from files...");
+            Log.Information($"Parsing meta from {moduleFiles.Count} file in module {moduleName}...");
+
+            var pbarOption = new ProgressBarOptions() { DisplayTimeInRealTime = false, ProgressBarOnBottom = true };
+            using var pbar = new ProgressBar(moduleFiles.Count, "Parsing meta...", pbarOption);
             await Parallel.ForEachAsync(moduleFiles, async (file, token) =>
             {
                 var parser = new MetaParser(file);
                 await parser.Parse();
+                pbar.Tick();
             });
+            Log.Information($"Parsed meta from files in module {moduleName}");
 
             return true;
         }
@@ -148,6 +146,7 @@ namespace CppHeaderTool.Parser
                         break;
                 }
             }
+            Log.Information("");
 
             return compilation;
         }
