@@ -72,11 +72,11 @@ namespace CppHeaderTool.Templates
                 }
             }
 
-            public string Render(TemplateContext context)
+            public async ValueTask<string> Render(TemplateContext context)
             {
                 try
                 {
-                    return template.Render(context);
+                    return await template.RenderAsync(context);
                 }
                 catch (Exception e)
                 {
@@ -111,6 +111,11 @@ namespace CppHeaderTool.Templates
             }
 
             return template;
+        }
+
+        public void Clear()
+        {
+            _templates.Clear();
         }
 
         public string GetPath(TemplateContext context, SourceSpan callerSpan, string templateName)
@@ -152,7 +157,7 @@ namespace CppHeaderTool.Templates
 
         private async static ValueTask WriteTemplateAsync(CodeTemplate template, TemplateContext context, string path)
         {
-            string content = template.Render(context);
+            string content = await template.Render(context);
             bool isFileExist = File.Exists(path);
             if (string.IsNullOrEmpty(content))
             {

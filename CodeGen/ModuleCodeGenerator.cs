@@ -31,15 +31,13 @@ namespace CppHeaderTool.CodeGen
 
             List<TemplateGenerateInfo> generateInfos = new List<TemplateGenerateInfo>(100);
 
-            AddGenerateInfo(generateInfos, _module, "module_header.scriban", $"module/{_module.moduleName}.h");
-            AddGenerateInfo(generateInfos, _module, "module_cpp.scriban",    $"module/{_module.moduleName}.cpp");
+            AddGenerateInfos(generateInfos, Session.config.moduleTemplates, _module, _module.moduleName);
 
             foreach (CppClass cppClass in compilation.Classes)
             {
                 if (Session.typeTables.TryGet(cppClass, out HtClass htClass))
                 {
-                    AddGenerateInfo(generateInfos, htClass, "class_header.scriban", $"class/{htClass.cppClass.Name}.h");
-                    AddGenerateInfo(generateInfos, htClass, "class_cpp.scriban",    $"class/{htClass.cppClass.Name}.cpp");
+                    AddGenerateInfos(generateInfos, Session.config.classTemplates, htClass, htClass.cppClass.Name);
                 }
             }
 
@@ -47,8 +45,7 @@ namespace CppHeaderTool.CodeGen
             {
                 if (Session.typeTables.TryGet(cppEnum, out HtEnum htEnum))
                 {
-                    AddGenerateInfo(generateInfos, htEnum, "enum_header.scriban", $"enum/{htEnum.cppEnum.Name}.h");
-                    AddGenerateInfo(generateInfos, htEnum, "enum_cpp.scriban",    $"enum/{htEnum.cppEnum.Name}.cpp");
+                    AddGenerateInfos(generateInfos, Session.config.enumTemplates, htEnum, htEnum.cppEnum.Name);
                 }
             }
 
@@ -63,6 +60,14 @@ namespace CppHeaderTool.CodeGen
             });
 
             Log.Information($"Generated module {moduleName}");
+        }
+
+        private void AddGenerateInfos(List<TemplateGenerateInfo> list, Dictionary<string, string> templates, object importObject, string name)
+        {
+            foreach (var (template, outPath) in templates)
+            {
+                AddGenerateInfo(list, importObject, template, string.Format(outPath, name));
+            }
         }
 
         private void AddGenerateInfo(List<TemplateGenerateInfo> list, object importObject, string template, string outputPath)

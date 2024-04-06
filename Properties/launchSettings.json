@@ -2,7 +2,7 @@
   "profiles": {
     "CppHeaderTool": {
       "commandName": "Project",
-      "commandLineArgs": " --config D:\\Works\\YR\\YrVisualScript\\build\\.gens\\YrScripting\\windows\\codegen\\config.json --out_dir D:\\Works\\YR\\YrVisualScript\\build\\.gens\\YrScripting\\windows\\codegen"
+      "commandLineArgs": " --config D:\\Works\\YR\\YrVisualScript\\build\\.gens\\YrScripting\\windows\\codegen\\config.json --out_dir D:\\Works\\YR\\YrVisualScript\\build\\.gens\\YrScripting\\windows\\codegen --test_generate"
     }
   }
 }

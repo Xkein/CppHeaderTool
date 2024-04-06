@@ -73,7 +73,6 @@ namespace CppHeaderTool.Parser
         public override async ValueTask Parse()
         {
             Log.Information($"Parsing module {moduleName}");
-            Log.Information($"moduleFiles: {string.Join(", ", moduleFiles)}");
             Log.Information($"ParserOptions: {JsonConvert.SerializeObject(_parserOptions, Formatting.Indented)}");
 
             Task<CppCompilation> compileTask = Task.Run(CompileHeaders);
