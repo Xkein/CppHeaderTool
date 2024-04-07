@@ -144,15 +144,16 @@ namespace CppHeaderTool.Templates
 
         public async Task Generate(TemplateGenerateInfo info)
         {
+            var getTemplateTask = GetTemplateAsync(info.template);
             var templateContext = new TemplateContext();
             var scriptObject = new ScriptObject();
             scriptObject.Import(info.importObject);
 
             templateContext.TemplateLoader = this;
             templateContext.PushGlobal(scriptObject);
+            templateContext.StrictVariables = true;
 
-            CodeTemplate template = await GetTemplateAsync(info.template);
-            await WriteTemplateAsync(template, templateContext, info.outputPath);
+            await WriteTemplateAsync(getTemplateTask.Result, templateContext, info.outputPath);
         }
 
         private async static ValueTask WriteTemplateAsync(CodeTemplate template, TemplateContext context, string path)
@@ -173,7 +174,7 @@ namespace CppHeaderTool.Templates
                 {
                     Directory.CreateDirectory(dir);
                 }
-                string oldContent = "";
+                string oldContent = string.Empty;
                 if (isFileExist) {
                     oldContent = await File.ReadAllTextAsync(path);
                 }

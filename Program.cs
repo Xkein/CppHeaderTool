@@ -1,12 +1,12 @@
-﻿
-using CommandLine;
+﻿using CommandLine;
 using CppHeaderTool.CodeGen;
 using CppHeaderTool.Parser;
+using CppHeaderTool.Tables;
 using Newtonsoft.Json;
-using Scriban.Parsing;
 using Serilog;
 using Serilog.Events;
 using System.Diagnostics;
+using System.Runtime.Serialization.Formatters.Binary;
 
 namespace CppHeaderTool
 {
@@ -23,8 +23,15 @@ namespace CppHeaderTool
             [Option("log_level")]
             public LogEventLevel logLevel { get; set; } = LogEventLevel.Information;
 
-            [Option("test_generate")]
-            public bool testGenerate { get; set; }
+            [Option("save_parser_result", HelpText = "WIP")]
+            public bool saveParserResult { get; set; }
+
+            [Option("read_cached_parser_result", HelpText = "WIP")]
+            public bool readCachedParserResult { get; set; }
+
+            // for test
+            [Option("loop_generate")]
+            public bool loopGenerate { get; set; }
         }
         static int Main(string[] args)
         {
@@ -55,11 +62,11 @@ namespace CppHeaderTool
             Session.config = JsonConvert.DeserializeObject<Config>(File.ReadAllText(configPath));
             Log.Information($"Config: {JsonConvert.SerializeObject(Session.config, Formatting.Indented)}");
 
-            int result = MainTask().Result;
+            int result = MainTask(cmdLineArgs).Result;
 
-            if (cmdLineArgs.testGenerate)
+            if (cmdLineArgs.loopGenerate)
             {
-                TestGenerateTask().Wait();
+                LoopGenerateTask().Wait();
             }
             return result;
         }
@@ -77,39 +84,63 @@ namespace CppHeaderTool
                 .CreateLogger();
         }
 
-        static async Task<string[]> ReadFileAsync(string path)
-        {
-            if (!File.Exists(path))
-            {
-                return new string[0];
-            }
+        static string sCachedFilePath => Path.Combine(Session.outDir, "parser_cache");
 
-            return await File.ReadAllLinesAsync(path);
-        }
-
-        static async Task<int> MainTask()
+        static async Task<int> MainTask(CmdLineArgs args)
         {
             Stopwatch stopwatch = Stopwatch.StartNew();
 
-            ModuleParseInfo moduleParseInfo = new ModuleParseInfo()
+            bool isUseCache = false;
+            if (args.readCachedParserResult)
             {
-                moduleName = Session.config.moduleName,
-                moduleFiles = Session.config.headerFiles,
-                includeDirs = Session.config.includeDirs,
-                systemIncludeDirs = Session.config.systemIncludeDirs,
-                defines = Session.config.defines,
-                arguments = Session.config.arguments,
-            };
+                try
+                {
+                    Log.Information($"reading parser cache from file: {sCachedFilePath}");
 
-            ModuleParser moduleParser = new ModuleParser(moduleParseInfo);
-            await moduleParser.Parse();
+                    ParserCacheResult.Load(sCachedFilePath);
+                    isUseCache = true;
+                }
+                catch (Exception e)
+                {
+                    Log.Error(e, "could not load parser result from cache!");
+                }
+            }
+
+            if (!isUseCache)
+            {
+                ModuleParseInfo moduleParseInfo = new ModuleParseInfo()
+                {
+                    moduleName = Session.config.moduleName,
+                    moduleFiles = Session.config.headerFiles,
+                    includeDirs = Session.config.includeDirs,
+                    systemIncludeDirs = Session.config.systemIncludeDirs,
+                    defines = Session.config.defines,
+                    arguments = Session.config.arguments,
+                };
+
+                ModuleParser moduleParser = new ModuleParser(moduleParseInfo);
+                await moduleParser.Parse();
+
+                if (args.saveParserResult)
+                {
+                    try
+                    {
+                        Log.Information($"saving parser result to file: {sCachedFilePath}");
+                        ParserCacheResult.Save(sCachedFilePath);
+                    }
+                    catch (Exception e)
+                    {
+                        Log.Error(e, "could not save parser result cache!");
+                    }
+                }
+            }
 
             if (Session.hasError)
             {
                 return -1; 
             }
 
-            ModuleCodeGenerator moduleCodeGenerator = new ModuleCodeGenerator(moduleParseInfo.moduleName, Session.outDir);
+            ModuleCodeGenerator moduleCodeGenerator = new ModuleCodeGenerator(Session.config.moduleName, Session.outDir);
             await moduleCodeGenerator.Generate();
 
             if (Session.hasError)
@@ -123,7 +154,7 @@ namespace CppHeaderTool
             return 0;
         }
 
-        static async Task TestGenerateTask()
+        static async Task LoopGenerateTask()
         {
             ModuleParseInfo moduleParseInfo = new ModuleParseInfo()
             {
@@ -137,11 +168,17 @@ namespace CppHeaderTool
 
             while (true)
             {
-                Console.WriteLine("press 'x' to exit loop re-generation");
+                Console.WriteLine("press 'X' to exit loop re-generation, 'R' to re-parse code");
                 ConsoleKeyInfo key = Console.ReadKey();
                 if (key.Key == ConsoleKey.X)
                 {
                     break;
+                }
+                else if (key.Key == ConsoleKey.R)
+                {
+                    Session.tables = new();
+                    ModuleParser moduleParser = new ModuleParser(moduleParseInfo);
+                    await moduleParser.Parse();
                 }
                 else
                 {
