@@ -1,4 +1,5 @@
-﻿using System;
+﻿using CppAst;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -17,9 +18,21 @@ namespace CppHeaderTool.Meta
 
     public class HtMetaData
     {
+        public string keyword;
+        public CppSourceSpan sourceSpan;
+
         private Dictionary<string, bool> _tags = new ();
         private Dictionary<string, string> _kvPairs = new();
         //private List<List<string>> _stringLists;
+
+
+        private string _keyword;
+        private CppSourceSpan _sourceSpan;
+        public HtMetaData(string keyword, CppSourceSpan span)
+        {
+            _keyword = keyword;
+            _sourceSpan = span;
+        }
 
         public void AddTag(string key)
         {

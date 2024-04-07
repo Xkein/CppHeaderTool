@@ -85,8 +85,9 @@ namespace CppHeaderTool.Parser
 
             Log.Information("Waiting compile result...");
             CppCompilation compilation = compileTask.Result;
+            Task inputTextFileTask = File.WriteAllTextAsync(Path.Combine(Session.outDir, $".InputText.{moduleName}.h"), compilation.InputText);
 
-            if(compilation.HasErrors)
+            if (compilation.HasErrors)
             {
                 Session.hasError = true;
                 return;

@@ -73,7 +73,7 @@ namespace CppHeaderTool
 
         static void CreateLogger(CmdLineArgs args)
         {
-            string logFile = Path.Combine(args.outDir, "CppHeaderTool.Log.txt");
+            string logFile = Path.Combine(args.outDir, "CppHeaderTool.log");
             if (File.Exists(logFile)) {
                 File.Delete(logFile);
             }

@@ -1,4 +1,5 @@
-﻿using CppHeaderTool.Meta;
+﻿using CppAst;
+using CppHeaderTool.Meta;
 using CppHeaderTool.Specifies;
 using CppHeaderTool.Tables;
 using CppHeaderTool.Utils;
@@ -46,8 +47,10 @@ namespace CppHeaderTool.Parser
 
             int keywordIdx = -1;
             int keywordLen = 0;
-            foreach (string keyword in metaKeywords)
+            string keyword = null;
+            foreach (string cur in metaKeywords)
             {
+                keyword = cur;
                 int idx = line.IndexOf(keyword);
                 if (idx >= 0)
                 {
@@ -63,10 +66,21 @@ namespace CppHeaderTool.Parser
             int bracketLeftIdx = line.IndexOf('(', keywordIdx + keywordLen);
             int bracketRightIdx = line.IndexOf(')', keywordIdx + keywordLen);
 
-            StringView rawMeta = new StringView(line, bracketLeftIdx + 1, bracketRightIdx - bracketLeftIdx - 1);
-            HtMetaData meta = MetaUtils.ParseMetaData(rawMeta.ToString());
+            if (bracketLeftIdx < 0 || bracketRightIdx < 0 || bracketLeftIdx > bracketRightIdx)
+                return;
 
-            fileMetaTables.Add(curLine, meta);
+            try
+            {
+                StringView rawMeta = new StringView(line, bracketLeftIdx + 1, bracketRightIdx - bracketLeftIdx - 1);
+                HtMetaData meta = new HtMetaData(keyword, new CppSourceSpan(new CppSourceLocation(), new CppSourceLocation()));
+                MetaUtils.TryParseMetaData(meta, rawMeta.ToString());
+
+                fileMetaTables.Add(curLine, meta);
+            }
+            catch (Exception e)
+            {
+                Log.Error(e, $"{filePath}(line {curLine}): could not parse meta from \"{line}\"");
+            }
         }
     }
 }

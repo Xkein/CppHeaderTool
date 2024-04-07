@@ -11,10 +11,8 @@ namespace CppHeaderTool.Utils
 {
     internal static class MetaUtils
     {
-        public static HtMetaData ParseMetaData(string rawMeta)
+        public static bool TryParseMetaData(HtMetaData meta, string rawMeta)
         {
-            HtMetaData meta = new HtMetaData();
-
             int length = rawMeta.Length;
 
             bool isPair = false;
@@ -84,7 +82,7 @@ namespace CppHeaderTool.Utils
                 idx++;
             }
 
-            return meta;
+            return true;
         }
     }
 }
