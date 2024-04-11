@@ -12,6 +12,8 @@ namespace CppHeaderTool
         public Dictionary<string, string> enumTemplates { get; set; }
 
         public string moduleName { get; set; }
+        
+        public string inputText { get; set; }
 
         public string[] headerFiles { get; set; }
 

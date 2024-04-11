@@ -9,6 +9,7 @@ namespace CppHeaderTool.Parser
     public class ModuleParseInfo
     {
         public string moduleName;
+        public string inputText;
         public IEnumerable<string> moduleFiles;
         public IEnumerable<string> includeDirs;
         public IEnumerable<string> systemIncludeDirs;
@@ -23,9 +24,9 @@ namespace CppHeaderTool.Parser
         public List<string> systemIncludeDirs { get; private set; }
         public List<string> defines { get; private set; }
         public List<string> arguments { get; private set; }
-
+        
         private CppParserOptions _parserOptions;
-
+        private string _inputText;
         public ModuleParser(ModuleParseInfo info)
         {
             _parserOptions = new CppParserOptions()
@@ -67,7 +68,7 @@ namespace CppHeaderTool.Parser
             systemIncludeDirs = _parserOptions.SystemIncludeFolders;
             defines = _parserOptions.Defines;
             arguments = _parserOptions.AdditionalArguments;
-
+            _inputText = info.inputText;
         }
 
         public override async ValueTask Parse()
@@ -110,15 +111,33 @@ namespace CppHeaderTool.Parser
         {
             Log.Information($"Parsing meta from {moduleFiles.Count} file in module {moduleName}...");
 
-            var pbarOption = new ProgressBarOptions() { DisplayTimeInRealTime = false, ProgressBarOnBottom = true };
+            var pbarOption = new ProgressBarOptions() { DisplayTimeInRealTime = false, ProgressBarOnBottom = true, EnableTaskBarProgress = true };
             using var pbar = new ProgressBar(moduleFiles.Count, "Parsing meta...", pbarOption);
-            await Parallel.ForEachAsync(moduleFiles, async (file, token) =>
+            
+            CancellationTokenSource tokenSource = new CancellationTokenSource();
+            int errorCount = 0; const int MAX_ERROR_COUNT = 20;
+            await Parallel.ForEachAsync(moduleFiles, tokenSource.Token, async (file, token) =>
             {
-                var parser = new MetaParser(file);
-                await parser.Parse();
-                pbar.Tick();
+                try
+                {
+                    var parser = new MetaParser(file);
+                    await parser.Parse();
+                }
+                catch (Exception e)
+                {
+                    Log.Error(e, $"Parsing meta error from file {file}");
+                    if (Interlocked.Increment(ref errorCount) == MAX_ERROR_COUNT)
+                    {
+                        Log.Error("too many errors. exiting module parser...");
+                        tokenSource.Cancel();
+                    }
+                }
+                finally
+                {
+                    pbar.Tick();
+                }
             });
-            Log.Information($"Parsed meta from files in module {moduleName}");
+            Log.Information($"End parsing meta from files in module {moduleName}");
 
             return true;
         }
@@ -126,7 +145,15 @@ namespace CppHeaderTool.Parser
         private CppCompilation CompileHeaders()
         {
             Log.Information($"compiling...");
-            CppCompilation compilation = CppParser.ParseFiles(moduleFiles, _parserOptions);
+            CppCompilation compilation;
+            if (string.IsNullOrEmpty(_inputText))
+            {
+                compilation = CppParser.ParseFiles(moduleFiles, _parserOptions);
+            }
+            else
+            {
+                compilation = CppParser.Parse(_inputText, _parserOptions);
+            }
             Session.compilation = compilation;
 
             Log.Information("Compiler messages:");

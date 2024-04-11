@@ -51,12 +51,30 @@ namespace CppHeaderTool.CodeGen
 
             Log.Information($"Generating {generateInfos.Count} code file in module {moduleName}...");
 
-            var pbarOption = new ProgressBarOptions() { DisplayTimeInRealTime = false, ProgressBarOnBottom = true };
+            var pbarOption = new ProgressBarOptions() { DisplayTimeInRealTime = false, ProgressBarOnBottom = true, EnableTaskBarProgress = true };
             using var pbar = new ProgressBar(generateInfos.Count, "Generating code from template...", pbarOption);
-            await Parallel.ForEachAsync(generateInfos, async (TemplateGenerateInfo info, CancellationToken token) =>
+
+            CancellationTokenSource tokenSource = new CancellationTokenSource();
+            int errorCount = 0; const int MAX_ERROR_COUNT = 20;
+            await Parallel.ForEachAsync(generateInfos, tokenSource.Token, async (TemplateGenerateInfo info, CancellationToken token) =>
             {
-                await Session.templateManager.Generate(info);
-                pbar.Tick();
+                try
+                {
+                    await Session.templateManager.Generate(info);
+                }
+                catch (Exception e)
+                {
+                    Log.Error(e, $"error generating {info.outputPath}");
+                    if (Interlocked.Increment(ref errorCount) == MAX_ERROR_COUNT)
+                    {
+                        Log.Error("too many errors. exiting module generator...");
+                        tokenSource.Cancel();
+                    }
+                }
+                finally
+                {
+                    pbar.Tick();
+                }
             });
 
             Log.Information($"Generated module {moduleName}");

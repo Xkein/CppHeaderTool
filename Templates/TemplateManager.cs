@@ -74,15 +74,7 @@ namespace CppHeaderTool.Templates
 
             public async ValueTask<string> Render(TemplateContext context)
             {
-                try
-                {
-                    return await template.RenderAsync(context);
-                }
-                catch (Exception e)
-                {
-                    Log.Error(e, "error rendering code template!");
-                    return e.ToString();
-                }
+                return await template.RenderAsync(context);
             }
         }
 
@@ -158,31 +150,41 @@ namespace CppHeaderTool.Templates
 
         private async static ValueTask WriteTemplateAsync(CodeTemplate template, TemplateContext context, string path)
         {
-            string content = await template.Render(context);
-            bool isFileExist = File.Exists(path);
-            if (string.IsNullOrEmpty(content))
+            try
             {
-                if (isFileExist)
+                string content = await template.Render(context);
+                bool isFileExist = File.Exists(path);
+                if (string.IsNullOrEmpty(content))
                 {
-                    File.Delete(path);
+                    if (isFileExist)
+                    {
+                        File.Delete(path);
+                    }
+                }
+                else
+                {
+                    string dir = Path.GetDirectoryName(path);
+                    if (!Directory.Exists(dir))
+                    {
+                        Directory.CreateDirectory(dir);
+                    }
+                    string oldContent = string.Empty;
+                    if (isFileExist)
+                    {
+                        oldContent = await File.ReadAllTextAsync(path);
+                    }
+                    if (oldContent != content)
+                    {
+                        await File.WriteAllTextAsync(path, content);
+                    }
+                    Log.Information($"{path} generated!");
                 }
             }
-            else
+            catch (Exception e)
             {
-                string dir = Path.GetDirectoryName(path);
-                if (!Directory.Exists(dir))
-                {
-                    Directory.CreateDirectory(dir);
-                }
-                string oldContent = string.Empty;
-                if (isFileExist) {
-                    oldContent = await File.ReadAllTextAsync(path);
-                }
-                if (oldContent != content)
-                {
-                    await File.WriteAllTextAsync(path, content);
-                }
-                Log.Information($"{path} generated!");
+                Log.Error(e, $"error rendering code template to {path}!");
+                File.WriteAllText(path, e.ToString());
+                throw;
             }
         }
     }

@@ -118,8 +118,16 @@ namespace CppHeaderTool
                     arguments = Session.config.arguments,
                 };
 
-                ModuleParser moduleParser = new ModuleParser(moduleParseInfo);
-                await moduleParser.Parse();
+                try
+                {
+                    ModuleParser moduleParser = new ModuleParser(moduleParseInfo);
+                    await moduleParser.Parse();
+                }
+                catch (Exception e)
+                {
+                    Log.Error(e, "module parsing error!");
+                    return -1;
+                }
 
                 if (args.saveParserResult)
                 {
@@ -140,8 +148,16 @@ namespace CppHeaderTool
                 return -1; 
             }
 
-            ModuleCodeGenerator moduleCodeGenerator = new ModuleCodeGenerator(Session.config.moduleName, Session.outDir);
-            await moduleCodeGenerator.Generate();
+            try
+            {
+                ModuleCodeGenerator moduleCodeGenerator = new ModuleCodeGenerator(Session.config.moduleName, Session.outDir);
+                await moduleCodeGenerator.Generate();
+            }
+            catch (Exception e)
+            {
+                Log.Error(e, "module generating error!");
+                return -1;
+            }
 
             if (Session.hasError)
             {
@@ -168,30 +184,30 @@ namespace CppHeaderTool
 
             while (true)
             {
-                Console.WriteLine("press 'X' to exit loop re-generation, 'R' to re-parse code");
-                ConsoleKeyInfo key = Console.ReadKey();
-                if (key.Key == ConsoleKey.X)
+                try
                 {
-                    break;
-                }
-                else if (key.Key == ConsoleKey.R)
-                {
-                    Session.tables = new();
-                    ModuleParser moduleParser = new ModuleParser(moduleParseInfo);
-                    await moduleParser.Parse();
-                }
-                else
-                {
-                    try
+                    Console.WriteLine("press 'X' to exit loop re-generation, 'R' to re-parse code");
+                    ConsoleKeyInfo key = Console.ReadKey();
+                    if (key.Key == ConsoleKey.X)
+                    {
+                        break;
+                    }
+                    else if (key.Key == ConsoleKey.R)
+                    {
+                        Session.tables = new();
+                        ModuleParser moduleParser = new ModuleParser(moduleParseInfo);
+                        await moduleParser.Parse();
+                    }
+                    else
                     {
                         Session.templateManager.Clear();
                         ModuleCodeGenerator moduleCodeGenerator = new ModuleCodeGenerator(moduleParseInfo.moduleName, Session.outDir);
                         await moduleCodeGenerator.Generate();
                     }
-                    catch (Exception e)
-                    {
-                        Console.WriteLine(e.ToString());
-                    }
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e.ToString());
                 }
             }
         }
