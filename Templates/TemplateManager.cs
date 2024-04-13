@@ -144,6 +144,7 @@ namespace CppHeaderTool.Templates
             templateContext.TemplateLoader = this;
             templateContext.PushGlobal(scriptObject);
             templateContext.StrictVariables = true;
+            templateContext.LoopLimit = 10000;
 
             await WriteTemplateAsync(getTemplateTask.Result, templateContext, info.outputPath);
         }
@@ -182,7 +183,11 @@ namespace CppHeaderTool.Templates
             }
             catch (Exception e)
             {
-                Log.Error(e, $"error rendering code template to {path}!");
+                string dir = Path.GetDirectoryName(path);
+                if (!Directory.Exists(dir))
+                {
+                    Directory.CreateDirectory(dir);
+                }
                 File.WriteAllText(path, e.ToString());
                 throw;
             }

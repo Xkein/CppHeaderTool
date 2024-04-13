@@ -116,6 +116,7 @@ namespace CppHeaderTool
                     systemIncludeDirs = Session.config.systemIncludeDirs,
                     defines = Session.config.defines,
                     arguments = Session.config.arguments,
+                    inputText = Session.config.inputText,
                 };
 
                 try
@@ -180,6 +181,7 @@ namespace CppHeaderTool
                 systemIncludeDirs = Session.config.systemIncludeDirs,
                 defines = Session.config.defines,
                 arguments = Session.config.arguments,
+                inputText = Session.config.inputText,
             };
 
             while (true)
