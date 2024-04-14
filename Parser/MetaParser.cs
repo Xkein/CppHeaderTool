@@ -64,6 +64,12 @@ namespace CppHeaderTool.Parser
                 int idx = line.IndexOf(keyword);
                 if (idx >= 0)
                 {
+                    if (idx - 1 >= 0)
+                    {
+                        char lastChar = line[idx - 1];
+                        if (HtFCString.IsAlnum(lastChar) || lastChar == '_')
+                            continue;
+                    }
                     keywordIdx = idx;
                     keywordLen = keyword.Length;
                     break;
