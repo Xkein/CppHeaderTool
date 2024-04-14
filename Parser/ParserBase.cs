@@ -22,7 +22,7 @@ namespace CppHeaderTool.Parser
                 return;
 
             CppSourceLocation sourceLocation = element.Span.Start;
-            if (!Session.metaTables.Tables.TryGetValue(sourceLocation.File, out var metaTable))
+            if (!Session.metaTables.TryGetValue(Path.GetFullPath(sourceLocation.File), out var metaTable))
                 return;
 
             for (int offset = -1; offset <= 0; offset++)

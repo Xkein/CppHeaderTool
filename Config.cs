@@ -33,5 +33,7 @@ namespace CppHeaderTool
         public string targetVendor { get; set; }
         public string targetCpuSub { get; set; }
         public string targetCpu { get; set; }
+        public string preHeaderText { get; set; }
+        public string postHeaderText { get; set; }
     }
 }

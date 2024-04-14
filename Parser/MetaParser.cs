@@ -23,7 +23,17 @@ namespace CppHeaderTool.Parser
             Keywords.Property,
         };
 
-        internal FileMetaTables fileMetaTables => Session.metaTables.Get(filePath);
+        internal FileMetaTables fileMetaTables
+        {
+            get
+            {
+                if (_FileMetaTables != null)
+                    return _FileMetaTables;
+                return _FileMetaTables = Session.metaTables.GetOrAdd(Path.GetFullPath(filePath), (key) => new FileMetaTables());
+            }
+        }
+
+        private FileMetaTables _FileMetaTables;
 
         public MetaParser(string filePath)
         {
@@ -72,10 +82,19 @@ namespace CppHeaderTool.Parser
             try
             {
                 StringView rawMeta = new StringView(line, bracketLeftIdx + 1, bracketRightIdx - bracketLeftIdx - 1);
-                HtMetaData meta = new HtMetaData(keyword, new CppSourceSpan(new CppSourceLocation(), new CppSourceLocation()));
+                HtMetaData meta = new HtMetaData(keyword, new CppSourceSpan(
+                    new CppSourceLocation(filePath, 0, curLine, keywordIdx + 1),
+                    new CppSourceLocation(filePath, 0, curLine, bracketRightIdx + 1)));
                 MetaUtils.TryParseMetaData(meta, rawMeta.ToString());
 
-                fileMetaTables.Add(curLine, meta);
+                if (!fileMetaTables.TryAdd(curLine, meta))
+                {
+                    Log.Error($"{meta.sourceSpan} could not add to meta table");
+                }
+                else
+                {
+                    Log.Verbose($"{meta.sourceSpan}: {keyword}({rawMeta})");
+                }
             }
             catch (Exception e)
             {

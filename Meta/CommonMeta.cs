@@ -13,13 +13,13 @@ namespace CppHeaderTool.Meta
 
     public struct ReflectionMeta
     {
-        public bool Reflected;
+        //public bool Reflected;
 
     }
 
     public struct SerializationMeta
     {
-        public bool Serializable;
+        //public bool Serializable;
 
     }
 

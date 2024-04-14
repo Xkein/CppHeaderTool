@@ -18,8 +18,11 @@ namespace CppHeaderTool.Meta
 
     public class HtMetaData
     {
-        public string keyword;
-        public CppSourceSpan sourceSpan;
+        public string keyword => _keyword;
+        public CppSourceSpan sourceSpan => _sourceSpan;
+
+        public Dictionary<string, bool> tags => _tags;
+        public Dictionary<string, string> kvPairs => _kvPairs;
 
         private Dictionary<string, bool> _tags = new ();
         private Dictionary<string, string> _kvPairs = new();

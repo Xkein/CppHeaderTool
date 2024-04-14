@@ -13,7 +13,7 @@ namespace CppHeaderTool.Meta
         public SerializationMeta Serialization;
         public RawMeta Raw;
 
-        public bool AllReflected;
+        public bool AllVisible;
     }
     public struct EnumConstantMeta
     {

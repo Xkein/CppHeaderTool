@@ -58,11 +58,32 @@ namespace CppHeaderTool.Parser
                     htClass.functions.Add(htFunction);
                 }
             }
+            foreach (CppFunction cppFunction in cppClass.Destructors)
+            {
+                if (typeTables.TryGet(cppFunction, out HtFunction htFunction))
+                {
+                    htClass.functions.Add(htFunction);
+                }
+            }
             foreach (CppFunction cppFunction in cppClass.Functions)
             {
                 if (typeTables.TryGet(cppFunction, out HtFunction htFunction))
                 {
                     htClass.functions.Add(htFunction);
+                }
+            }
+
+            Dictionary<string, HtFunction> funcDict = new();
+            foreach (HtFunction htFunction in htClass.functions)
+            {
+                if (funcDict.TryGetValue(htFunction.cppFunction.Name, out HtFunction otherFunc))
+                {
+                    htFunction.isOverload = true;
+                    otherFunc.isOverload = true;
+                }
+                else
+                {
+                    funcDict.Add(htFunction.cppFunction.Name, htFunction);
                 }
             }
 

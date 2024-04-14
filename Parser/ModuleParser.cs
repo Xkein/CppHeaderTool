@@ -61,6 +61,8 @@ namespace CppHeaderTool.Parser
             _parserOptions.AdditionalArguments.AddRange(info.arguments);
             _parserOptions.IncludeFolders.AddRange(info.includeDirs);
             _parserOptions.SystemIncludeFolders.AddRange(info.systemIncludeDirs);
+            _parserOptions.PreHeaderText = Session.config.preHeaderText;
+            _parserOptions.PostHeaderText = Session.config.postHeaderText;
 
             moduleName = info.moduleName;
             moduleFiles = info.moduleFiles.ToList();

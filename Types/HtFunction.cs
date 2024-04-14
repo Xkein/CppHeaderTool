@@ -15,7 +15,6 @@ namespace CppHeaderTool.Types
         public CppFunction cppFunction;
 
         public FunctionMeta meta;
-
-
+        public bool isOverload;
     }
 }

@@ -16,7 +16,7 @@ namespace CppHeaderTool.Specifies
             CommonSpecifiers.ParseSerializationMeta(ref meta.Serialization, metaData);
             CommonSpecifiers.ParseRawMeta(ref meta.Raw, metaData);
 
-            meta.AllReflected = metaData.GetTag("AllReflected");
+            meta.AllVisible = metaData.GetTag("AllVisible");
         }
     }
     public class EnumConstantSpecifies

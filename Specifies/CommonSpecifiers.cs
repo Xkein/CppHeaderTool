@@ -11,18 +11,17 @@ namespace CppHeaderTool.Specifies
     {
         public static void ParseAccessibilityMeta(ref AccessibilityMeta meta, HtMetaData metaData)
         {
-            //meta.visible = metaData.GetTag("Visible");
 
         }
 
         public static void ParseRelectionMeta(ref ReflectionMeta meta, HtMetaData metaData)
         {
-            meta.Reflected = metaData.GetOptionalBool("Reflected", true);
+            //meta.Reflected = metaData.GetOptionalBool("Reflected", true);
         }
 
         public static void ParseSerializationMeta(ref SerializationMeta meta, HtMetaData metaData)
         {
-            meta.Serializable = metaData.GetOptionalBool("Serializable", true);
+            //meta.Serializable = metaData.GetOptionalBool("Serializable", true);
 
         }
 
