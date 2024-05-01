@@ -2,7 +2,7 @@
   "profiles": {
     "CppHeaderTool": {
       "commandName": "Project",
-      "commandLineArgs": " --config D:\\Works\\YR\\YrVisualScript\\build\\.gens\\YRpp\\windows\\codegen\\config.json --out_dir D:\\Works\\YR\\YrVisualScript\\build\\.gens\\YRpp\\windows\\codegen --loop_generate --read_cached_parser_result --save_parser_result --log_level Verbose"
+      "commandLineArgs": " --config D:\\Works\\YR\\YrVisualScript\\build\\.gens\\YrExtensionCore\\windows\\codegen\\config.json --out_dir D:\\Works\\YR\\YrVisualScript\\build\\.gens\\YrExtensionCore\\windows\\codegen --loop_generate --read_cached_parser_result --save_parser_result --log_level Verbose"
     }
   }
 }

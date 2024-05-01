@@ -22,29 +22,16 @@ namespace CppHeaderTool.Utils
             int idx = 0;
             while(idx < length)
             {
+                bool isEndOrSeparate = idx + 1 == length;
                 char c = rawMeta[idx];
 
                 if (HtFCString.IsAlnum(c) || c == '_')
                 {
                     builder.Append(c);
                 }
-                else if (c == ',' || idx + 1 == length)
+                else if (c == ',')
                 {
-                    string word = builder.ToString();
-                    tmp.Add(word);
-                    builder.Clear();
-
-                    if (isPair)
-                    {
-                        meta.AddKeyValue(tmp[0], tmp[1]);
-                        isPair = false;
-                        tmp.Clear();
-                    }
-                    else
-                    {
-                        meta.AddTag(tmp[0]);
-                        tmp.Clear();
-                    }
+                    isEndOrSeparate = true;
                 }
                 else if (c == '=')
                 {
@@ -76,6 +63,25 @@ namespace CppHeaderTool.Utils
                     else
                     {
                         throw new Exception($"unexpected '{next}' after '/'");
+                    }
+                }
+
+                if (isEndOrSeparate)
+                {
+                    string word = builder.ToString();
+                    tmp.Add(word);
+                    builder.Clear();
+
+                    if (isPair)
+                    {
+                        meta.AddKeyValue(tmp[0], tmp[1]);
+                        isPair = false;
+                        tmp.Clear();
+                    }
+                    else
+                    {
+                        meta.AddTag(tmp[0]);
+                        tmp.Clear();
                     }
                 }
 
