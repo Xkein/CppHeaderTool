@@ -55,7 +55,7 @@ namespace CppHeaderTool.CodeGen
             using var pbar = new ProgressBar(generateInfos.Count, "Generating code from template...", pbarOption);
 
             CancellationTokenSource tokenSource = new CancellationTokenSource();
-            int errorCount = 0; const int MAX_ERROR_COUNT = 20;
+            int errorCount = 0; const int MAX_ERROR_COUNT = 10;
             await Parallel.ForEachAsync(generateInfos, tokenSource.Token, async (TemplateGenerateInfo info, CancellationToken token) =>
             {
                 try

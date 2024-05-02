@@ -117,7 +117,7 @@ namespace CppHeaderTool.Parser
             using var pbar = new ProgressBar(moduleFiles.Count, "Parsing meta...", pbarOption);
             
             CancellationTokenSource tokenSource = new CancellationTokenSource();
-            int errorCount = 0; const int MAX_ERROR_COUNT = 20;
+            int errorCount = 0; const int MAX_ERROR_COUNT = 10;
             await Parallel.ForEachAsync(moduleFiles, tokenSource.Token, async (file, token) =>
             {
                 try
