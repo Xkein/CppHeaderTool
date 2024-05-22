@@ -90,7 +90,7 @@ namespace CppHeaderTool.CodeGen
 
         private void AddGenerateInfo(List<TemplateGenerateInfo> list, object importObject, string template, string outputPath)
         {
-            list.Add(new TemplateGenerateInfo(importObject, template, Path.Combine(Session.outDir, outputPath)));
+            list.Add(new TemplateGenerateInfo(importObject, template, Path.Combine(Session.outDir, outputPath), _module));
         }
     }
 }

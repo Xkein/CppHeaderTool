@@ -17,12 +17,14 @@ namespace CppHeaderTool.Templates
         public object importObject;
         public string template;
         public string outputPath;
+        public HtModule module;
 
-        public TemplateGenerateInfo(object importObject, string template, string outputPath)
+        public TemplateGenerateInfo(object importObject, string template, string outputPath, HtModule module)
         {
             this.importObject = importObject;
             this.template = template;
             this.outputPath = outputPath;
+            this.module = module;
         }
     }
 
@@ -140,6 +142,7 @@ namespace CppHeaderTool.Templates
             var templateContext = new TemplateContext();
             var scriptObject = new ScriptObject();
             scriptObject.Import(info.importObject);
+            scriptObject.Add("module", info.module);
 
             templateContext.TemplateLoader = this;
             templateContext.PushGlobal(scriptObject);
