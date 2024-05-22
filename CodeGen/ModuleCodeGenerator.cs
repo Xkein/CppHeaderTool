@@ -37,7 +37,7 @@ namespace CppHeaderTool.CodeGen
             {
                 if (Session.typeTables.TryGet(cppClass, out HtClass htClass))
                 {
-                    AddGenerateInfos(generateInfos, Session.config.classTemplates, htClass, htClass.cppClass.Name);
+                    AddGenerateInfos(generateInfos, Session.config.typeTemplates, htClass, htClass.cppClass.Name);
                 }
             }
 
@@ -45,7 +45,7 @@ namespace CppHeaderTool.CodeGen
             {
                 if (Session.typeTables.TryGet(cppEnum, out HtEnum htEnum))
                 {
-                    AddGenerateInfos(generateInfos, Session.config.enumTemplates, htEnum, htEnum.cppEnum.Name);
+                    AddGenerateInfos(generateInfos, Session.config.typeTemplates, htEnum, htEnum.cppEnum.Name);
                 }
             }
 
@@ -84,7 +84,7 @@ namespace CppHeaderTool.CodeGen
         {
             foreach (var (template, outPath) in templates)
             {
-                AddGenerateInfo(list, importObject, template, string.Format(outPath, name));
+                AddGenerateInfo(list, importObject, template, string.Format(outPath, name, moduleName));
             }
         }
 

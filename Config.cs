@@ -8,8 +8,7 @@ namespace CppHeaderTool
         public string templateDir { get; set; }
 
         public Dictionary<string, string> moduleTemplates { get; set; }
-        public Dictionary<string, string> classTemplates { get; set; }
-        public Dictionary<string, string> enumTemplates { get; set; }
+        public Dictionary<string, string> typeTemplates { get; set; }
 
         public string moduleName { get; set; }
         
