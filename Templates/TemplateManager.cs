@@ -142,6 +142,7 @@ namespace CppHeaderTool.Templates
             var templateContext = new TemplateContext();
             var scriptObject = new ScriptObject();
             scriptObject.Import(info.importObject);
+            scriptObject.SetValue("mathex", new ScriptMath(), true);
             scriptObject.Add("module", info.module);
 
             templateContext.TemplateLoader = this;

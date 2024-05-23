@@ -16,5 +16,6 @@ namespace CppHeaderTool.Types
 
         public FunctionMeta meta;
         public bool isOverload;
+        public bool isDeleted => cppFunction.Flags.HasFlag(CppFunctionFlags.Deleted);
     }
 }
