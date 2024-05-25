@@ -10,7 +10,29 @@ namespace CppHeaderTool.Parser
 {
     internal abstract class ParserBase
     {
-        public abstract ValueTask Parse();
+        private Dictionary<string, object> _lockers = new();
+
+        protected abstract string lockerName { get; }
+
+        protected abstract ValueTask ParseInternal();
+        public ValueTask Parse()
+        {
+            if (lockerName == null)
+                return ParseInternal();
+
+            if (!_lockers.TryGetValue(lockerName, out object locker))
+            {
+                lock (_lockers)
+                {
+                    _lockers.Add(lockerName, new object());
+                    locker = _lockers[lockerName];
+                }
+            }
+            lock (locker)
+            {
+                return ParseInternal();
+            }
+        }
     }
 
 
@@ -35,7 +57,7 @@ namespace CppHeaderTool.Parser
             }
         }
 
-        public static async ValueTask ParseList(this ParserBase thisParser, CppContainerList<CppFunction> list)
+        public static async ValueTask ParseList(this ParserBase thisParser, IEnumerable<CppFunction> list)
         {
             foreach (CppFunction cppFunction in list)
             {
@@ -43,7 +65,7 @@ namespace CppHeaderTool.Parser
                 await parser.Parse();
             }
         }
-        public static async ValueTask ParseList(this ParserBase thisParser, CppContainerList<CppField> list)
+        public static async ValueTask ParseList(this ParserBase thisParser, IEnumerable<CppField> list)
         {
             foreach (CppField cppField in list)
             {
@@ -51,7 +73,7 @@ namespace CppHeaderTool.Parser
                 await parser.Parse();
             }
         }
-        public static async ValueTask ParseList(this ParserBase thisParser, CppContainerList<CppEnum> list)
+        public static async ValueTask ParseList(this ParserBase thisParser, IEnumerable<CppEnum> list)
         {
             foreach (CppEnum cppEnum in list)
             {
@@ -59,7 +81,7 @@ namespace CppHeaderTool.Parser
                 await parser.Parse();
             }
         }
-        public static async ValueTask ParseList(this ParserBase thisParser, CppContainerList<CppClass> list)
+        public static async ValueTask ParseList(this ParserBase thisParser, IEnumerable<CppClass> list)
         {
             await Parallel.ForEachAsync(list, async (CppClass cppClass, CancellationToken token) =>
             {

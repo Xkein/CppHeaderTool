@@ -16,6 +16,8 @@ namespace CppHeaderTool.Parser
         private HtSpecifierContext _specifierContext;
         private HtSpecifierTable _table;
 
+        protected override string lockerName => throw new NotImplementedException();
+
         public SpecifierParser(HtSpecifierContext specifierContext, HtSpecifierTable table)
         {
             _specifierContext = specifierContext;
@@ -28,7 +30,7 @@ namespace CppHeaderTool.Parser
             _table = table;
         }
 
-        public override ValueTask Parse()
+        protected override ValueTask ParseInternal()
         {
             HtMetaData metaData = _specifierContext.metaData;
             foreach (string token in metaData.GetSpecifiers())

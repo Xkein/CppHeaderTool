@@ -1,5 +1,6 @@
 ﻿using CppAst;
 using CppHeaderTool.Specifies;
+using CppHeaderTool.Tables;
 using CppHeaderTool.Types;
 using Serilog;
 using System;
@@ -21,9 +22,12 @@ namespace CppHeaderTool.Parser
         }
 
 
-
-        public override ValueTask Parse()
+        protected override string lockerName => TypeTables.GetUniqueName(cppEnum);
+        protected override ValueTask ParseInternal()
         {
+            if (Session.typeTables.TryGet(cppEnum, out _))
+                return ValueTask.CompletedTask;
+
             Log.Verbose($"Parsing enum {cppEnum.FullName}");
 
             HtEnum htEnum = new HtEnum();

@@ -1,6 +1,7 @@
 ﻿using CppAst;
 using CppHeaderTool.Meta;
 using CppHeaderTool.Specifies;
+using CppHeaderTool.Tables;
 using CppHeaderTool.Types;
 using Serilog;
 using System;
@@ -21,16 +22,23 @@ namespace CppHeaderTool.Parser
         }
 
 
-
-        public override async ValueTask Parse()
+        protected override string lockerName => TypeTables.GetUniqueName(cppClass);
+        protected override async ValueTask ParseInternal()
         {
+            if (Session.typeTables.TryGet(cppClass, out _))
+                return;
+
             Log.Verbose($"Parsing class {cppClass.FullName}");
 
             HtClass htClass = new HtClass();
             htClass.cppClass = cppClass;
+            htClass.baseClasses = new List<HtBaseClass>();
             htClass.functions = new List<HtFunction>();
+            htClass.destructors = new List<HtFunction>();
+            htClass.constructors = new List<HtFunction>();
             htClass.properties = new List<HtProperty>();
             htClass.enums = new List<HtEnum>();
+            htClass.isInterface = htClass.isAbstract && cppClass.Name.StartsWith('I');
 
             this.ParseMeta(cppClass, metaData => ClassSpecifiers.ParseMeta(ref htClass.meta, metaData));
 
@@ -43,6 +51,7 @@ namespace CppHeaderTool.Parser
         {
             // this.ParseList(cppClass.Classes);
             await Task.WhenAll(
+                this.ParseList(cppClass.BaseTypes.Select(b => b.Type as CppClass).Where(c => c != null)).AsTask(),
                 this.ParseList(cppClass.Constructors).AsTask(),
                 this.ParseList(cppClass.Functions).AsTask(),
                 this.ParseList(cppClass.Fields).AsTask(),
@@ -51,18 +60,22 @@ namespace CppHeaderTool.Parser
 
             var typeTables = Session.typeTables;
 
+            foreach (CppBaseType cppBaseType in cppClass.BaseTypes)
+            {
+                htClass.baseClasses.Add(new HtBaseClass(cppBaseType));
+            }
             foreach (CppFunction cppFunction in cppClass.Constructors)
             {
                 if (typeTables.TryGet(cppFunction, out HtFunction htFunction))
                 {
-                    htClass.functions.Add(htFunction);
+                    htClass.constructors.Add(htFunction);
                 }
             }
             foreach (CppFunction cppFunction in cppClass.Destructors)
             {
                 if (typeTables.TryGet(cppFunction, out HtFunction htFunction))
                 {
-                    htClass.functions.Add(htFunction);
+                    htClass.destructors.Add(htFunction);
                 }
             }
             foreach (CppFunction cppFunction in cppClass.Functions)
@@ -74,7 +87,7 @@ namespace CppHeaderTool.Parser
             }
 
             Dictionary<string, HtFunction> funcDict = new();
-            foreach (HtFunction htFunction in htClass.functions)
+            foreach (HtFunction htFunction in htClass.allFunctions)
             {
                 if (funcDict.TryGetValue(htFunction.cppFunction.Name, out HtFunction otherFunc))
                 {

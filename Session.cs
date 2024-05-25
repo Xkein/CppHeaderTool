@@ -12,7 +12,6 @@ namespace CppHeaderTool
     internal class Session
     {
         public static Config config { get; set; }
-        public static CppCompilation compilation { get; set; }
 
         public static HtTables tables { get; set; } = new HtTables();
         public static TypeTables typeTables => tables.typeTables;

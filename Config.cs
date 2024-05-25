@@ -24,6 +24,9 @@ namespace CppHeaderTool
 
         public string[] arguments { get; set; }
 
+        public bool multiThread { get; set; } = true;
+        public int compileBatch { get; set; } = 20;
+
         // CppParserOptions
         public bool isWindowsMsvc { get; set; }
         public bool isParseSystemIncludes { get; set; } = true;

@@ -27,26 +27,19 @@ namespace CppHeaderTool.CodeGen
             {
                 return;
             }
-            CppCompilation compilation = _module.cppCompilation;
 
             List<TemplateGenerateInfo> generateInfos = new List<TemplateGenerateInfo>(100);
 
             AddGenerateInfos(generateInfos, Session.config.moduleTemplates, _module, _module.moduleName);
 
-            foreach (CppClass cppClass in compilation.Classes)
+            foreach (HtClass htClass in _module.classes)
             {
-                if (Session.typeTables.TryGet(cppClass, out HtClass htClass))
-                {
-                    AddGenerateInfos(generateInfos, Session.config.typeTemplates, htClass, htClass.cppClass.Name);
-                }
+                AddGenerateInfos(generateInfos, Session.config.typeTemplates, htClass, htClass.cppClass.Name);
             }
 
-            foreach (CppEnum cppEnum in compilation.Enums)
+            foreach (HtEnum htEnum in _module.enums)
             {
-                if (Session.typeTables.TryGet(cppEnum, out HtEnum htEnum))
-                {
-                    AddGenerateInfos(generateInfos, Session.config.typeTemplates, htEnum, htEnum.cppEnum.Name);
-                }
+                AddGenerateInfos(generateInfos, Session.config.typeTemplates, htEnum, htEnum.cppEnum.Name);
             }
 
             Log.Information($"Generating {generateInfos.Count} code file in module {moduleName}...");
@@ -64,6 +57,7 @@ namespace CppHeaderTool.CodeGen
                 }
                 catch (Exception e)
                 {
+                    Session.hasError = true;
                     Log.Error(e, $"error generating {info.outputPath}");
                     if (Interlocked.Increment(ref errorCount) == MAX_ERROR_COUNT)
                     {

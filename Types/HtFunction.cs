@@ -17,5 +17,18 @@ namespace CppHeaderTool.Types
         public FunctionMeta meta;
         public bool isOverload;
         public bool isDeleted => cppFunction.Flags.HasFlag(CppFunctionFlags.Deleted);
+        public bool isConst => cppFunction.IsConst;
+        public bool isStatic => cppFunction.IsStatic;
+        public bool isVirtual  => cppFunction.IsVirtual;
+        public bool isPureVirtual  => cppFunction.IsPureVirtual;
+        public bool isCxxClassMethod  => cppFunction.IsCxxClassMethod;
+        public bool isDestructor => cppFunction.IsDestructor;
+        public bool isConstructor => cppFunction.IsConstructor;
+        public bool isFunctionTemplate => cppFunction.IsFunctionTemplate;
+        public CppVisibility visibility => cppFunction.Visibility;
+        public bool isProtected => visibility == CppVisibility.Protected;
+        public bool isPrivate => visibility == CppVisibility.Private;
+        public bool isConstexpr { get; set; }
+        public string name  => cppFunction.Name;
     }
 }

@@ -40,7 +40,8 @@ namespace CppHeaderTool.Parser
             this.filePath = filePath;
         }
 
-        public override async ValueTask Parse()
+        protected override string lockerName => null;
+        protected override async ValueTask ParseInternal()
         {
             int curLine = 1;
             IEnumerable<string> lines = await File.ReadAllLinesAsync(filePath);

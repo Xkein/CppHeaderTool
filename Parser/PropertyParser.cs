@@ -1,5 +1,6 @@
 ﻿using CppAst;
 using CppHeaderTool.Specifies;
+using CppHeaderTool.Tables;
 using CppHeaderTool.Types;
 using Serilog;
 using System;
@@ -14,16 +15,17 @@ namespace CppHeaderTool.Parser
     {
         public CppField cppField { get; private set; }
 
+        protected override string lockerName => TypeTables.GetUniqueName(cppField);
 
         public PropertyParser(CppField cppField)
         {
             this.cppField = cppField;
         }
 
-
-
-        public override ValueTask Parse()
+        protected override ValueTask ParseInternal()
         {
+            if (Session.typeTables.TryGet(cppField, out _))
+                return ValueTask.CompletedTask;
             //Log.Information($"Parsing property {cppField.FullParentName}.{cppField}");
 
             HtProperty htProperty = new HtProperty();

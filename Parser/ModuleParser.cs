@@ -1,8 +1,10 @@
 ﻿using CppAst;
+using CppHeaderTool.Tables;
 using CppHeaderTool.Types;
 using Newtonsoft.Json;
 using Serilog;
 using ShellProgressBar;
+using System.Collections.Generic;
 
 namespace CppHeaderTool.Parser
 {
@@ -73,12 +75,17 @@ namespace CppHeaderTool.Parser
             _inputText = info.inputText;
         }
 
-        public override async ValueTask Parse()
+        protected override string lockerName => moduleName;
+        protected override async ValueTask ParseInternal()
         {
+            if (Session.typeTables.TryGet(moduleName, out _))
+                return;
+
             Log.Information($"Parsing module {moduleName}");
             Log.Information($"ParserOptions: {JsonConvert.SerializeObject(_parserOptions, Formatting.Indented)}");
 
             Task<CppCompilation> compileTask = Task.Run(CompileHeaders);
+            //Task<CppCompilation[]> compileTask = Task.Run(MultiCompilerHeaders);
 
             if (!await ParseMeta())
             {
@@ -88,17 +95,17 @@ namespace CppHeaderTool.Parser
 
             Log.Information("Waiting compile result...");
             CppCompilation compilation = compileTask.Result;
-            Task inputTextFileTask = File.WriteAllTextAsync(Path.Combine(Session.outDir, $".InputText.{moduleName}.h"), compilation.InputText);
+            //CppCompilation[] compilations = compileTask.Result;
 
-            if (compilation.HasErrors)
+            if (Session.hasError)
             {
-                Session.hasError = true;
                 return;
             }
 
+            Log.Information("Parsing compile result...");
+
             HtModule htModule = new HtModule();
             htModule.moduleName = moduleName;
-            htModule.cppCompilation = compilation;
             htModule.classes = new List<HtClass>();
             htModule.functions = new List<HtFunction>();
             htModule.properties = new List<HtProperty>();
@@ -156,7 +163,6 @@ namespace CppHeaderTool.Parser
             {
                 compilation = CppParser.Parse(_inputText, _parserOptions);
             }
-            Session.compilation = compilation;
 
             Log.Information("Compiler messages:");
             foreach (CppDiagnosticMessage message in compilation.Diagnostics.Messages)
@@ -177,7 +183,58 @@ namespace CppHeaderTool.Parser
             }
             Log.Information("");
 
+            if (compilation.HasErrors)
+            {
+                Session.hasError = true;
+            }
+
             return compilation;
+        }
+
+        private CppCompilation[] MultiCompilerHeaders()
+        {
+            int batch = Math.Max(Session.config.compileBatch, (int)Math.Ceiling(moduleFiles.Count / (double)Environment.ProcessorCount));
+            int count = (int)Math.Ceiling(moduleFiles.Count / (double)batch);
+            if (!Session.config.multiThread)
+            {
+                batch = moduleFiles.Count - 1;
+                count = 1;
+            }
+            CppCompilation[] compilations = new CppCompilation[count];
+            CancellationTokenSource tokenSource = new CancellationTokenSource();
+            Parallel.ForAsync(0, count, tokenSource.Token, (index, token) =>
+            {
+                int from = index * batch;
+                int to = Math.Min(moduleFiles.Count - 1, from + batch - 1);
+                Log.Information($"compiling files[{from}..{to}]...");
+                CppCompilation compilation = CppParser.ParseFiles(moduleFiles[from..to], _parserOptions);
+                Log.Information($"compiled files[{from}..{to}]...");
+                Log.Information("Compiler messages:");
+                foreach (CppDiagnosticMessage message in compilation.Diagnostics.Messages)
+                {
+                    string msg = message.ToString();
+                    switch (message.Type)
+                    {
+                        case CppLogMessageType.Warning:
+                            Log.Warning(msg);
+                            break;
+                        case CppLogMessageType.Error:
+                            Log.Error(msg);
+                            break;
+                        default:
+                            Log.Information(msg);
+                            break;
+                    }
+                }
+                Log.Information("");
+                compilations[index] = compilation;
+                if (compilation.HasErrors)
+                {
+                    Session.hasError = true;
+                }
+                return ValueTask.CompletedTask;
+            }).Wait();
+            return compilations;
         }
 
         private async Task ParseChildren(HtModule htModule, CppCompilation compilation)
@@ -191,6 +248,7 @@ namespace CppHeaderTool.Parser
 
             var typeTables = Session.typeTables;
 
+            Log.Information($"collecting parsed types...");
             foreach (CppClass cppClass in compilation.Classes)
             {
                 if (typeTables.TryGet(cppClass, out HtClass htClass))
@@ -220,6 +278,63 @@ namespace CppHeaderTool.Parser
                 {
                     htModule.enums.Add(htEnum);
                 }
+            }
+        }
+        private async Task ParseChildren(HtModule htModule, CppCompilation[] compilations)
+        {
+            CancellationTokenSource tokenSource = new CancellationTokenSource();
+            await Parallel.ForEachAsync(compilations, tokenSource.Token, async (compilation, token) =>
+            {
+                await Task.WhenAll(
+                    this.ParseList(compilation.Enums).AsTask(),
+                    this.ParseList(compilation.Classes).AsTask(),
+                    this.ParseList(compilation.Functions).AsTask(),
+                    this.ParseList(compilation.Fields).AsTask()
+                );
+            });
+
+            var typeTables = Session.typeTables;
+
+            Log.Information($"collecting parsed types...");
+            foreach (CppCompilation compilation in compilations)
+            {
+                Dictionary<string, HtClass> classes = new();
+                Dictionary<string, HtFunction> functions = new();
+                Dictionary<string, HtProperty> fields = new();
+                Dictionary<string, HtEnum> enums = new();
+                foreach (CppClass cppClass in compilation.Classes)
+                {
+                    if (typeTables.TryGet(cppClass, out HtClass htClass))
+                    {
+                        classes[TypeTables.GetUniqueName(cppClass)] = htClass;
+                    }
+                }
+                foreach (CppFunction cppFunction in compilation.Functions)
+                {
+                    if (typeTables.TryGet(cppFunction, out HtFunction htFunction))
+                    {
+                        functions[TypeTables.GetUniqueName(cppFunction)] = htFunction;
+                    }
+                }
+                foreach (CppField cppField in compilation.Fields)
+                {
+                    if (typeTables.TryGet(cppField, out HtProperty htProperty))
+                    {
+                        fields[TypeTables.GetUniqueName(cppField)] = htProperty;
+                    }
+                }
+                foreach (CppEnum cppEnum in compilation.Enums)
+                {
+                    if (typeTables.TryGet(cppEnum, out HtEnum htEnum))
+                    {
+                        enums[TypeTables.GetUniqueName(cppEnum)] = htEnum;
+                    }
+                }
+
+                htModule.classes.AddRange(classes.Values);
+                htModule.functions.AddRange(functions.Values);
+                htModule.properties.AddRange(fields.Values);
+                htModule.enums.AddRange(enums.Values);
             }
         }
     }

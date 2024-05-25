@@ -1,5 +1,6 @@
 ﻿using CppAst;
 using CppHeaderTool.Specifies;
+using CppHeaderTool.Tables;
 using CppHeaderTool.Types;
 using Serilog;
 using System;
@@ -20,13 +21,16 @@ namespace CppHeaderTool.Parser
         }
 
 
-
-        public override ValueTask Parse()
+        protected override string lockerName => TypeTables.GetUniqueName(cppFunction);
+        protected override ValueTask ParseInternal()
         {
+            if (Session.typeTables.TryGet(cppFunction, out _))
+                return ValueTask.CompletedTask;
             //Log.Information($"Parsing function {cppFunction.FullParentName}.{cppFunction}");
 
             HtFunction htFunction = new HtFunction();
             htFunction.cppFunction = cppFunction;
+            //htFunction.isConstexpr = cppFunction.TokenAttributes;
 
             this.ParseMeta(cppFunction, metaData => FunctionSpecifiers.ParseMeta(ref htFunction.meta, metaData));
 
