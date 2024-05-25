@@ -3,7 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.7.34221.43
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CppHeaderTool", "CppHeaderTool.csproj", "{6397C1CE-B549-4678-85DC-4DD642506898}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CppHeaderTool", "src\CppHeaderTool\CppHeaderTool.csproj", "{FB4561C2-FD40-4313-9776-6CF4D81CFA2E}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CppAst", "3rdparty\CppAst.NET\src\CppAst\CppAst.csproj", "{F6F4C769-3CFC-4612-8C6F-781887394691}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -11,10 +13,14 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{6397C1CE-B549-4678-85DC-4DD642506898}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{6397C1CE-B549-4678-85DC-4DD642506898}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{6397C1CE-B549-4678-85DC-4DD642506898}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{6397C1CE-B549-4678-85DC-4DD642506898}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FB4561C2-FD40-4313-9776-6CF4D81CFA2E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FB4561C2-FD40-4313-9776-6CF4D81CFA2E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FB4561C2-FD40-4313-9776-6CF4D81CFA2E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FB4561C2-FD40-4313-9776-6CF4D81CFA2E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F6F4C769-3CFC-4612-8C6F-781887394691}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F6F4C769-3CFC-4612-8C6F-781887394691}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F6F4C769-3CFC-4612-8C6F-781887394691}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F6F4C769-3CFC-4612-8C6F-781887394691}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

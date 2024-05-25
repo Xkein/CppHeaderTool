@@ -1,0 +1,3 @@
+[submodule "3rdparty/CppAst.NET"]
+	path = 3rdparty/CppAst.NET
+	url = https://github.com/Xkein/CppAst.NET.git
