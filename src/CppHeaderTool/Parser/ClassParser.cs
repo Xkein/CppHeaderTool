@@ -1,4 +1,5 @@
-﻿using CppAst;
+﻿using ClangSharp.Interop;
+using CppAst;
 using CppHeaderTool.Meta;
 using CppHeaderTool.Specifies;
 using CppHeaderTool.Tables;
@@ -45,6 +46,11 @@ namespace CppHeaderTool.Parser
             await ParseChildren(htClass);
 
             Session.typeTables.Add(htClass);
+        }
+
+        public static void ParseCursor(CXCursor cursor, CXCursor parent, CppClass cppClass)
+        {
+
         }
 
         private async Task ParseChildren(HtClass htClass)

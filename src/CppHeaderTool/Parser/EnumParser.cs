@@ -1,4 +1,5 @@
-﻿using CppAst;
+﻿using ClangSharp.Interop;
+using CppAst;
 using CppHeaderTool.Specifies;
 using CppHeaderTool.Tables;
 using CppHeaderTool.Types;
@@ -41,6 +42,16 @@ namespace CppHeaderTool.Parser
             Session.typeTables.Add(htEnum);
 
             return ValueTask.CompletedTask;
+        }
+
+        public static void ParseCursor(CXCursor cursor, CXCursor parent, CppEnum cppEnum)
+        {
+
+        }
+
+        public static void ParseCursor(CXCursor cursor, CXCursor parent, CppEnumItem cppEnumItem)
+        {
+
         }
 
         private void ParseChildren(HtEnum htEnum)

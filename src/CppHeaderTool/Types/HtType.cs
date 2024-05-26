@@ -13,6 +13,14 @@ namespace CppHeaderTool.Types
 
     }
 
+    public static class HtTypeExtension
+    {
+        public static T GetUserData<T>(this CppElement element)
+        {
+            return (T)element.UserData;
+        }
+    }
+
     public interface IHasCppElement
     {
         CppElement element { get; }

@@ -33,10 +33,10 @@ namespace CppHeaderTool.Parser
         {
             _parserOptions = new CppParserOptions()
             {
-                ParseTokenAttributes = true,
-                ParseAsCpp = true,
-                ParseMacros = true,
-                AutoSquashTypedef = true,
+                ParseTokenAttributes = Session.config.parseTokenAttributes,
+                ParseAsCpp = Session.config.parseAsCpp,
+                ParseMacros = Session.config.parseMacros,
+                AutoSquashTypedef = Session.config.autoSquashTypedef,
             }.EnableMacros();
 
             _parserOptions.ParseSystemIncludes = Session.config.isParseSystemIncludes;
@@ -73,6 +73,15 @@ namespace CppHeaderTool.Parser
             defines = _parserOptions.Defines;
             arguments = _parserOptions.AdditionalArguments;
             _inputText = info.inputText;
+        }
+
+        static ModuleParser()
+        {
+            UserCustom.UserParseField += PropertyParser.ParseCursor;
+            UserCustom.UserParseClass += ClassParser.ParseCursor;
+            UserCustom.UserParseEnum += EnumParser.ParseCursor;
+            UserCustom.UserParseEnumItem += EnumParser.ParseCursor;
+            UserCustom.UserParseFunction += FunctionParser.ParseCursor;
         }
 
         protected override string lockerName => moduleName;

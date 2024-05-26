@@ -28,7 +28,7 @@ namespace CppHeaderTool.Types
         public CppVisibility visibility => cppFunction.Visibility;
         public bool isProtected => visibility == CppVisibility.Protected;
         public bool isPrivate => visibility == CppVisibility.Private;
-        public bool isConstexpr { get; set; }
+        public bool isConstexpr;
         public string name  => cppFunction.Name;
     }
 }

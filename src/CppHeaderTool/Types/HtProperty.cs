@@ -14,22 +14,8 @@ namespace CppHeaderTool.Types
         public CppElement element => cppField;
         public CppField cppField;
         public bool isStatic => cppField.StorageQualifier == CppStorageQualifier.Static;
-        public bool isConst
-        {
-            get
-            {
-                string str = cppField.Type.GetDisplayName();
-                if (str.Contains('&'))
-                    return false;
-                int constPos = str.IndexOf("const");
-                if (constPos == -1)
-                    return false;
-                int ptrPos = str.IndexOf('*');
-                if (ptrPos == -1)
-                    return constPos >= 0;
-                return ptrPos < constPos;
-            }
-        }
+        public bool isConst;
+        public bool isConstexpr;
         public string name => cppField.Name;
         public bool isAnonymous => cppField.IsAnonymous;
         public bool isBitField => cppField.IsBitField;

@@ -11,7 +11,7 @@ namespace CppHeaderTool
         public Dictionary<string, string> typeTemplates { get; set; }
 
         public string moduleName { get; set; }
-        
+
         public string inputText { get; set; }
 
         public string[] headerFiles { get; set; }
@@ -26,6 +26,10 @@ namespace CppHeaderTool
 
         public bool multiThread { get; set; } = true;
         public int compileBatch { get; set; } = 20;
+        public bool parseTokenAttributes { get; set; } = true;
+        public bool parseAsCpp { get; set; } = true;
+        public bool parseMacros { get; set; } = true;
+        public bool autoSquashTypedef { get; set; } = true;
 
         // CppParserOptions
         public bool isWindowsMsvc { get; set; }

@@ -1,6 +1,8 @@
-﻿using CppAst;
+﻿using ClangSharp.Interop;
+using CppAst;
 using CppHeaderTool.Specifies;
 using CppHeaderTool.Tables;
+using CppHeaderTool.Tokenizers;
 using CppHeaderTool.Types;
 using Serilog;
 using System;
@@ -30,13 +32,46 @@ namespace CppHeaderTool.Parser
 
             HtFunction htFunction = new HtFunction();
             htFunction.cppFunction = cppFunction;
-            //htFunction.isConstexpr = cppFunction.TokenAttributes;
+
+            ParserData userData = cppFunction.GetUserData<ParserData>();
+            htFunction.isConstexpr = userData.isConstexpr;
 
             this.ParseMeta(cppFunction, metaData => FunctionSpecifiers.ParseMeta(ref htFunction.meta, metaData));
 
             Session.typeTables.Add(htFunction);
 
             return ValueTask.CompletedTask;
+        }
+
+        class ParserData
+        {
+            public bool isConstexpr;
+        }
+        public static void ParseCursor(CXCursor cursor, CXCursor parent, CppFunction cppFunction)
+        {
+            ParserData userData = new ParserData();
+            cppFunction.UserData = userData;
+
+            if (!cppFunction.Flags.HasFlag(CppFunctionFlags.Inline))
+            {
+                return;
+            }
+
+            Tokenizer tokenizer = new Tokenizer(cursor);
+            TokenIterator iter = new TokenIterator(tokenizer);
+            while (iter.CanPeek)
+            {
+                string text = iter.PeekText();
+                if (text == "constexpr")
+                {
+                    userData.isConstexpr = true;
+                }
+                else if (text == "(")
+                {
+                    break;
+                }
+                iter.Next();
+            }
         }
     }
 }

@@ -75,7 +75,7 @@ namespace CppHeaderTool.Types
         public string name => cppClass.Name;
         public string displayName => cppClass.GetDisplayName();
 
-        public bool isInterface { get; set; }
+        public bool isInterface;
         public IEnumerable<HtFunction> allFunctions => constructors.Concat(destructors).Concat(functions);
 
         public List<HtBaseClass> baseClasses;

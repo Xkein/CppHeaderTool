@@ -1,7 +1,7 @@
 ﻿using CppHeaderTool.Meta;
 using CppHeaderTool.Parser;
 using CppHeaderTool.Tables;
-using CppHeaderTool.Tokenizer;
+using CppHeaderTool.Tokenizers;
 using CppHeaderTool.Types;
 using CppHeaderTool.Utils;
 using System;
