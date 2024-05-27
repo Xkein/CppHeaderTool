@@ -24,6 +24,7 @@ namespace CppHeaderTool.Types
         public CppVisibility visibility => cppField.Visibility;
         public bool isProtected => visibility == CppVisibility.Protected;
         public bool isPrivate => visibility == CppVisibility.Private;
+        public bool isArray => cppField.Type.TypeKind == CppTypeKind.Array;
 
         public PropertyMeta meta;
     }
