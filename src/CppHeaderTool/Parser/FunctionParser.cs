@@ -13,6 +13,11 @@ using System.Threading.Tasks;
 
 namespace CppHeaderTool.Parser
 {
+    internal class CppFunctionUserObject
+    {
+        public HtFunction function;
+        public bool isConstexpr;
+    }
     internal class FunctionParser : ParserBase
     {
         public CppFunction cppFunction { get; private set; }
@@ -33,7 +38,8 @@ namespace CppHeaderTool.Parser
             HtFunction htFunction = new HtFunction();
             htFunction.cppFunction = cppFunction;
 
-            ParserData userData = cppFunction.GetUserData<ParserData>();
+            var userData = cppFunction.GetUserData<CppFunctionUserObject>();
+            userData.function = htFunction;
             htFunction.isConstexpr = userData.isConstexpr;
 
             this.ParseMeta(cppFunction, metaData => FunctionSpecifiers.ParseMeta(ref htFunction.meta, metaData));
@@ -43,13 +49,9 @@ namespace CppHeaderTool.Parser
             return ValueTask.CompletedTask;
         }
 
-        class ParserData
-        {
-            public bool isConstexpr;
-        }
         public static void ParseCursor(CXCursor cursor, CXCursor parent, CppFunction cppFunction)
         {
-            ParserData userData = new ParserData();
+            var userData = new CppFunctionUserObject();
             cppFunction.UserData = userData;
 
             if (!cppFunction.Flags.HasFlag(CppFunctionFlags.Inline))

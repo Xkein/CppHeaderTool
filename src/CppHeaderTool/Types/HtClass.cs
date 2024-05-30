@@ -74,7 +74,14 @@ namespace CppHeaderTool.Types
         public int alignOf => cppClass.AlignOf;
         public string name => cppClass.Name;
         public string displayName => cppClass.GetDisplayName();
-
+        public string sourceFile
+        {
+            get
+            {
+                string file = cppClass.SourceFile;
+                return string.IsNullOrWhiteSpace(file) ? null : file;
+            }
+        }
         public bool isInterface;
         public IEnumerable<HtFunction> allFunctions => constructors.Concat(destructors).Concat(functions);
 

@@ -10,10 +10,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace CppHeaderTool.Parser
 {
+    internal class CppFieldUserObject
+    {
+        public HtProperty property;
+        public bool isConstexpr;
+    }
     internal class PropertyParser : ParserBase
     {
         public CppField cppField { get; private set; }
@@ -35,7 +39,8 @@ namespace CppHeaderTool.Parser
             htProperty.cppField = cppField;
             htProperty.isConst = GetIsConst(cppField);
 
-            ParserData userData = cppField.GetUserData<ParserData>();
+            var userData = cppField.GetUserData<CppFieldUserObject>();
+            userData.property = htProperty;
             htProperty.isConstexpr = userData.isConstexpr;
 
             this.ParseMeta(cppField, metaData => PropertySpecifiers.ParseMeta(ref htProperty.meta, metaData));
@@ -45,13 +50,9 @@ namespace CppHeaderTool.Parser
             return ValueTask.CompletedTask;
         }
 
-        class ParserData
-        {
-            public bool isConstexpr;
-        }
         public static void ParseCursor(CXCursor cursor, CXCursor parent, CppField cppField)
         {
-            ParserData userData = new ParserData();
+            var userData = new CppFieldUserObject();
             cppField.UserData = userData;
 
             if (cppField.InitExpression == null)
@@ -76,7 +77,7 @@ namespace CppHeaderTool.Parser
             }
         }
         
-        private bool GetIsConst(CppField cppField)
+        private static bool GetIsConst(CppField cppField)
         {
             string str = cppField.Type.GetDisplayName();
             if (str.Contains('&'))

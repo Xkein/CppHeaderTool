@@ -13,6 +13,10 @@ using System.Threading.Tasks;
 
 namespace CppHeaderTool.Parser
 {
+    class CppClassUserObject
+    {
+        public HtClass klass;
+    }
     internal class ClassParser : ParserBase
     {
         public CppClass cppClass { get; private set; }
@@ -45,11 +49,15 @@ namespace CppHeaderTool.Parser
 
             await ParseChildren(htClass);
 
+            CppClassUserObject userObject = cppClass.GetUserData<CppClassUserObject>();
+            userObject.klass = htClass;
+
             Session.typeTables.Add(htClass);
         }
 
         public static void ParseCursor(CXCursor cursor, CXCursor parent, CppClass cppClass)
         {
+            cppClass.UserData = new CppClassUserObject();
 
         }
 

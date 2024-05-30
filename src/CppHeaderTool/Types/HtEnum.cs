@@ -35,5 +35,13 @@ namespace CppHeaderTool.Types
         public CppVisibility visibility => cppEnum.Visibility;
         public bool isProtected => visibility == CppVisibility.Protected;
         public bool isPrivate => visibility == CppVisibility.Private;
+        public string sourceFile
+        {
+            get
+            {
+                string file = cppEnum.SourceFile;
+                return string.IsNullOrWhiteSpace(file) ? null : file;
+            }
+        }
     }
 }
