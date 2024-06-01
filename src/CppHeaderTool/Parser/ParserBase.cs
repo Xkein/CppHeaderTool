@@ -17,6 +17,7 @@ namespace CppHeaderTool.Parser
         protected abstract ValueTask ParseInternal();
         public ValueTask Parse()
         {
+            string lockerName = this.lockerName;
             if (lockerName == null)
                 return ParseInternal();
 
@@ -42,8 +43,9 @@ namespace CppHeaderTool.Parser
         {
             if (element.SourceFile == null)
                 return;
-
             CppSourceLocation sourceLocation = element.Span.Start;
+            if (sourceLocation.File == null)
+                return;
             if (!Session.metaTables.TryGetValue(Path.GetFullPath(sourceLocation.File), out var metaTable))
                 return;
 

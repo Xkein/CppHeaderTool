@@ -43,14 +43,15 @@ namespace CppHeaderTool.Parser
             htClass.constructors = new List<HtFunction>();
             htClass.properties = new List<HtProperty>();
             htClass.enums = new List<HtEnum>();
+            htClass.anonymousClasses = new List<HtClass>();
             htClass.isInterface = htClass.isAbstract && cppClass.Name.StartsWith('I');
+
+            CppClassUserObject userObject = cppClass.GetUserData<CppClassUserObject>();
+            userObject.klass = htClass;
 
             this.ParseMeta(cppClass, metaData => ClassSpecifiers.ParseMeta(ref htClass.meta, metaData));
 
             await ParseChildren(htClass);
-
-            CppClassUserObject userObject = cppClass.GetUserData<CppClassUserObject>();
-            userObject.klass = htClass;
 
             Session.typeTables.Add(htClass);
         }
@@ -119,6 +120,10 @@ namespace CppHeaderTool.Parser
                 if (typeTables.TryGet(cppField, out HtProperty htProperty))
                 {
                     htClass.properties.Add(htProperty);
+                    if (htProperty.anonymousClass != null)
+                    {
+                        htClass.anonymousClasses.Add(htProperty.anonymousClass);
+                    }
                 }
             }
 

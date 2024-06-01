@@ -1,4 +1,5 @@
-﻿using CppAst;
+﻿using ClangSharp.Interop;
+using CppAst;
 using CppHeaderTool.Specifies;
 using CppHeaderTool.Types;
 using System;
@@ -18,12 +19,36 @@ namespace CppHeaderTool.Tables
         private ConcurrentDictionary<string, HtFunction> _functions = new();
         private ConcurrentDictionary<string, HtProperty> _properties = new();
 
+        private static string GetUniqueName(CppType cppType)
+        {
+            if (cppType is CppClass cppClass)
+            {
+                if (cppClass.IsAnonymous)
+                {
+                    return cppType.FullParentName + "::AnonymousClass~" + cppClass.GetHashCode();
+                }
+            }
+            return cppType.FullName;
+        }
+
+        private static string GetUniqueName(CppDeclaration cppDeclaration)
+        {
+            if (cppDeclaration is CppField cppField)
+            {
+                if (cppField.IsAnonymous)
+                {
+                    return cppField.FullParentName + "::AnonymousField~" + cppField.GetHashCode();
+                }
+            }
+            return cppDeclaration.FullParentName + "::" + cppDeclaration.ToString();
+        }
+
         public static string GetUniqueName<T>(T element) where T : CppElement, ICppMember 
         {
-            if (element is CppType cppType)
-                return cppType.FullName;
-            else if (element is CppDeclaration cppDeclaration)
-                return element.FullParentName + "::" + cppDeclaration.ToString();
+            if (element is CppType)
+                return GetUniqueName(element as CppType);
+            else if (element is CppDeclaration)
+                return GetUniqueName(element as CppDeclaration);
             return element.FullParentName + "::" + element.Name;
         }
 

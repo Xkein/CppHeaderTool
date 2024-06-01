@@ -1,5 +1,6 @@
 ﻿using CppAst;
 using CppHeaderTool.Meta;
+using CppHeaderTool.Parser;
 using CppHeaderTool.Specifies;
 using System;
 using System.Collections.Generic;
@@ -18,6 +19,7 @@ namespace CppHeaderTool.Types
         public bool isConstexpr;
         public string name => cppField.Name;
         public bool isAnonymous => cppField.IsAnonymous;
+        public HtClass anonymousClass;
         public bool isBitField => cppField.IsBitField;
         public int bitFieldWidth => cppField.BitFieldWidth;
         public long offset => cppField.Offset;

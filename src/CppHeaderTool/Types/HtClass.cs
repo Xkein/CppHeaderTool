@@ -92,6 +92,8 @@ namespace CppHeaderTool.Types
         public List<HtProperty> properties;
         public List<HtEnum> enums;
 
+        public List<HtClass> anonymousClasses;
+
         public ClassMeta meta;
 
 

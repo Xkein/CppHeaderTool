@@ -19,6 +19,20 @@ namespace CppHeaderTool.Types
         {
             return (T)element.UserData;
         }
+
+        public static CppType UnwrapType(this CppType type)
+        {
+            switch (type.TypeKind)
+            {
+                case CppTypeKind.Pointer:
+                case CppTypeKind.Reference:
+                case CppTypeKind.Array:
+                case CppTypeKind.Qualified:
+                    return UnwrapType((type as CppTypeWithElementType).ElementType);
+                default:
+                    return type;
+            }
+        }
     }
 
     public interface IHasCppElement

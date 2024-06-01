@@ -8,6 +8,7 @@ using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -29,10 +30,10 @@ namespace CppHeaderTool.Parser
             this.cppField = cppField;
         }
 
-        protected override ValueTask ParseInternal()
+        protected override async ValueTask ParseInternal()
         {
             if (Session.typeTables.TryGet(cppField, out _))
-                return ValueTask.CompletedTask;
+                return;
             //Log.Information($"Parsing property {cppField.FullParentName}.{cppField}");
 
             HtProperty htProperty = new HtProperty();
@@ -47,7 +48,21 @@ namespace CppHeaderTool.Parser
 
             Session.typeTables.Add(htProperty);
 
-            return ValueTask.CompletedTask;
+            if (htProperty.isAnonymous)
+            {
+                CppType unwarpType = cppField.Type.UnwrapType();
+                if (unwarpType is CppClass anonymousCppClass)
+                {
+                    var parser = new ClassParser(anonymousCppClass);
+                    await parser.Parse();
+                    if (Session.typeTables.TryGet(anonymousCppClass, out HtClass anonymousClass))
+                    {
+                        htProperty.anonymousClass = anonymousClass;
+                    }
+                }
+            }
+
+            return;
         }
 
         public static void ParseCursor(CXCursor cursor, CXCursor parent, CppField cppField)
