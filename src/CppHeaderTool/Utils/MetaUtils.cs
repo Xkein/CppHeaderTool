@@ -16,6 +16,7 @@ namespace CppHeaderTool.Utils
             int length = rawMeta.Length;
 
             bool isPair = false;
+            bool isListEnd = false;
             StringBuilder builder = new StringBuilder();
             List<string> tmp = new List<string>(1);
 
@@ -35,11 +36,26 @@ namespace CppHeaderTool.Utils
                 }
                 else if (c == '=')
                 {
-                    string word = builder.ToString();
-                    tmp.Add(word);
-                    builder.Clear();
-
+                    isEndOrSeparate = true;
                     isPair = true;
+                }
+                else if (c == '\"')
+                {
+                    int strStartIdx = idx + 1;
+                    if (strStartIdx >= length)
+                    {
+                        throw new Exception("unexpected end after '\"'");
+                    }
+                    idx = rawMeta.IndexOf('\"', strStartIdx);
+                    if (idx < 0)
+                    {
+                        throw new Exception("error finding end of string");
+                    }
+                    if (idx > strStartIdx)
+                    {
+                        builder.Append(rawMeta.Substring(strStartIdx, idx - strStartIdx));
+                    }
+                    isEndOrSeparate = true;
                 }
                 else if (c == '/')
                 {
@@ -65,6 +81,15 @@ namespace CppHeaderTool.Utils
                         throw new Exception($"unexpected '{next}' after '/'");
                     }
                 }
+                else if (c == '[')
+                {
+                    isPair = false;
+                }
+                else if (c == ']')
+                {
+                    isEndOrSeparate = true;
+                    isListEnd = true;
+                }
 
                 if (isEndOrSeparate)
                 {
@@ -74,14 +99,30 @@ namespace CppHeaderTool.Utils
 
                     if (isPair)
                     {
-                        meta.AddKeyValue(tmp[0], tmp[1]);
-                        isPair = false;
-                        tmp.Clear();
+                        if (tmp.Count == 2)
+                        {
+                            meta.AddKeyValue(tmp[0], tmp[1]);
+                            tmp.Clear();
+                            isPair = false;
+                        }
+                        else if (tmp.Count > 2)
+                        {
+                            throw new Exception("not support embed key value pairs!");
+                        }
                     }
                     else
                     {
-                        meta.AddTag(tmp[0]);
-                        tmp.Clear();
+                        if (tmp.Count <= 1)
+                        {
+                            meta.AddTag(tmp[0]);
+                            tmp.Clear();
+                        }
+                        else if (isListEnd)
+                        {
+                            meta.AddStringList(tmp[0], tmp[1..].ToArray());
+                            tmp.Clear();
+                            isListEnd = false;
+                        }
                     }
                 }
 

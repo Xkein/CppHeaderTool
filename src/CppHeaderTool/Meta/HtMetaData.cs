@@ -23,10 +23,11 @@ namespace CppHeaderTool.Meta
 
         public Dictionary<string, bool> tags => _tags;
         public Dictionary<string, string> kvPairs => _kvPairs;
+        public Dictionary<string, string[]> stringList => _stringList;
 
         private Dictionary<string, bool> _tags = new ();
         private Dictionary<string, string> _kvPairs = new();
-        //private List<List<string>> _stringLists;
+        private Dictionary<string, string[]> _stringList = new();
 
 
         private string _keyword;
@@ -51,10 +52,19 @@ namespace CppHeaderTool.Meta
             _kvPairs.Add(key, value);
         }
 
+        public void AddStringList(string key, string[] list)
+        {
+            _stringList.Add(key, list);
+        }
 
         public string GetString(string key, string defValue = "")
         {
             return _kvPairs.GetValueOrDefault(key, defValue);
+        }
+
+        public string[] GetStringList(string key)
+        {
+            return _stringList.GetValueOrDefault(key, []);
         }
 
         public string GetOptionalString(string key, string defValue)

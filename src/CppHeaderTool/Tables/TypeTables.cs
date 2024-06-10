@@ -79,26 +79,50 @@ namespace CppHeaderTool.Tables
 
         public bool TryGet(string moduleName, out HtModule type)
         {
-            return _modules.TryGetValue(moduleName, out type);
+            return TryGetModule(moduleName, out type);
         }
 
         public bool TryGet(CppClass cppClass, out HtClass type)
         {
-            return _classes.TryGetValue(GetUniqueName(cppClass), out type);
+            return TryGetClass(GetUniqueName(cppClass), out type);
         }
 
         public bool TryGet(CppEnum cppEnum, out HtEnum type)
         {
-            return _enums.TryGetValue(GetUniqueName(cppEnum), out type);
+            return TryGetEnum(GetUniqueName(cppEnum), out type);
         }
 
         public bool TryGet(CppFunction cppFunction, out HtFunction type)
         {
-            return _functions.TryGetValue(GetUniqueName(cppFunction), out type);
+            return TryGetFunction(GetUniqueName(cppFunction), out type);
         }
         public bool TryGet(CppField cppField, out HtProperty type)
         {
-            return _properties.TryGetValue(GetUniqueName(cppField), out type);
+            return TryGetProperty(GetUniqueName(cppField), out type);
+        }
+
+        public bool TryGetModule(string name, out HtModule module)
+        {
+            return _modules.TryGetValue(name, out module);
+        }
+
+        public bool TryGetClass(string name, out HtClass type)
+        {
+            return _classes.TryGetValue(name, out type);
+        }
+
+        public bool TryGetEnum(string name, out HtEnum type)
+        {
+            return _enums.TryGetValue(name, out type);
+        }
+
+        public bool TryGetFunction(string name, out HtFunction type)
+        {
+            return _functions.TryGetValue(name, out type);
+        }
+        public bool TryGetProperty(string name, out HtProperty type)
+        {
+            return _properties.TryGetValue(name, out type);
         }
     }
 }
