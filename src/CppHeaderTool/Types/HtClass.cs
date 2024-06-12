@@ -1,5 +1,6 @@
 ﻿using CppAst;
 using CppHeaderTool.Meta;
+using CppHeaderTool.Tables;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -60,6 +61,7 @@ namespace CppHeaderTool.Types
     {
         public CppElement element => cppClass;
         public CppClass cppClass;
+        public string uniqueName => TypeTables.GetUniqueName(cppClass);
 
         public bool isAbstract => cppClass.IsAbstract;
         public bool isEmbeded => cppClass.IsEmbeded;

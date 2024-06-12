@@ -1,6 +1,7 @@
 ﻿using CppAst;
 using CppHeaderTool.Meta;
 using CppHeaderTool.Specifies;
+using CppHeaderTool.Tables;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,6 +14,7 @@ namespace CppHeaderTool.Types
     {
         public CppElement element => cppFunction;
         public CppFunction cppFunction;
+        public string uniqueName => TypeTables.GetUniqueName(cppFunction);
 
         public FunctionMeta meta;
         public bool isOverload;

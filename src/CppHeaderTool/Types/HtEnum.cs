@@ -1,6 +1,7 @@
 ﻿using CppAst;
 using CppHeaderTool.Meta;
 using CppHeaderTool.Specifies;
+using CppHeaderTool.Tables;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,6 +14,7 @@ namespace CppHeaderTool.Types
     {
         public CppElement element => cppEnumItem;
         public CppEnumItem cppEnumItem;
+        public string uniqueName => TypeTables.GetUniqueName(cppEnumItem);
 
         public EnumConstantMeta meta;
         public string name => cppEnumItem.Name;
@@ -22,6 +24,7 @@ namespace CppHeaderTool.Types
     {
         public CppElement element => cppEnum;
         public CppEnum cppEnum;
+        public string uniqueName => TypeTables.GetUniqueName(cppEnum);
 
         public List<HtEnumConstant> constants;
 

@@ -2,6 +2,7 @@
 using CppHeaderTool.Meta;
 using CppHeaderTool.Parser;
 using CppHeaderTool.Specifies;
+using CppHeaderTool.Tables;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,6 +15,7 @@ namespace CppHeaderTool.Types
     {
         public CppElement element => cppField;
         public CppField cppField;
+        public string uniqueName => TypeTables.GetUniqueName(cppField);
         public bool isStatic => cppField.StorageQualifier == CppStorageQualifier.Static;
         public bool isConst;
         public bool isConstexpr;
@@ -27,6 +29,22 @@ namespace CppHeaderTool.Types
         public bool isProtected => visibility == CppVisibility.Protected;
         public bool isPrivate => visibility == CppVisibility.Private;
         public bool isArray => cppField.Type.TypeKind == CppTypeKind.Array;
+        public bool isPointer => cppField.Type.TypeKind == CppTypeKind.Pointer;
+        public bool isReference => cppField.Type.TypeKind == CppTypeKind.Reference;
+        public bool isPrimitive => cppField.Type.TypeKind == CppTypeKind.Primitive;
+        public CppType unwrapType => cppField.Type.UnwrapType();
+
+        public HtClass unwrapClass
+        {
+            get
+            {
+                if (unwrapType is CppClass cppClass)
+                {
+                    return Session.typeTables.TryGet(cppClass, out var klass) ? klass : null;
+                }
+                return null;
+            }
+        }
 
         public PropertyMeta meta;
     }
