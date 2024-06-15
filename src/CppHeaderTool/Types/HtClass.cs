@@ -14,39 +14,7 @@ namespace CppHeaderTool.Types
         public CppElement element => cppBaseType;
         public CppBaseType cppBaseType;
         public HtClass klass;
-        public string fullDisplayName
-        {
-            get
-            {
-                var builder = new StringBuilder();
-                builder.Append(cppBaseType.Type.GetDisplayName());
-                var cls = cppBaseType.Type as CppClass;
-                if (cls != null && cls.TemplateKind != CppTemplateKind.NormalClass)
-                {
-                    builder.Append("<");
-
-                    if (cls.TemplateKind == CppTemplateKind.TemplateSpecializedClass)
-                    {
-                        for (var i = 0; i < cls.TemplateSpecializedArguments.Count; i++)
-                        {
-                            if (i > 0) builder.Append(", ");
-                            builder.Append(cls.TemplateSpecializedArguments[i].ToString());
-                        }
-                    }
-                    else if (cls.TemplateKind == CppTemplateKind.TemplateClass)
-                    {
-                        for (var i = 0; i < cls.TemplateParameters.Count; i++)
-                        {
-                            if (i > 0) builder.Append(", ");
-                            builder.Append(cls.TemplateParameters[i].ToString());
-                        }
-                    }
-
-                    builder.Append(">");
-                }
-                return builder.ToString();
-            }
-        }
+        public string fullDisplayName => cppBaseType.Type.GetDisplayName();
 
         public HtBaseClass(CppBaseType cppBaseType)
         {
