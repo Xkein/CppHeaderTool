@@ -1,5 +1,6 @@
 ﻿
 
+using CppAst;
 using CppHeaderTool.Types;
 using Scriban.Runtime;
 
@@ -7,6 +8,19 @@ namespace CppHeaderTool.Templates
 {
     class ScriptType : ScriptObject
     {
+        public static CppType UnwrapType(CppType cppType)
+        {
+            return cppType.UnwrapType();
+        }
+        public static HtClass UnwrapClass(CppType cppType)
+        {
+            if (cppType.UnwrapType() is CppClass cppClass)
+            {
+                return Session.typeTables.TryGet(cppClass, out var klass) ? klass : null;
+            }
+            return null;
+        }
+
         public static HtClass GetClass(string name)
         {
             if(Session.typeTables.TryGetClass(name, out var type))
