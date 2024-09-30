@@ -101,19 +101,30 @@ namespace CppHeaderTool.Parser
                 }
             }
 
+            Dictionary<string, List<HtFunction>> overloadFunctions = new();
             Dictionary<string, HtFunction> funcDict = new();
             foreach (HtFunction htFunction in htClass.allFunctions)
             {
-                if (funcDict.TryGetValue(htFunction.cppFunction.Name, out HtFunction otherFunc))
+                if (funcDict.TryGetValue(htFunction.name, out HtFunction otherFunc))
                 {
-                    htFunction.isOverload = true;
-                    otherFunc.isOverload = true;
+                    if (overloadFunctions.TryGetValue(htFunction.name, out List<HtFunction> funcList))
+                    {
+                        htFunction.isOverload = true;
+                        funcList.Add(htFunction);
+                    }
+                    else
+                    {
+                        htFunction.isOverload = true;
+                        otherFunc.isOverload = true;
+                        overloadFunctions[htFunction.name] = new List<HtFunction>() { htFunction, otherFunc };
+                    }
                 }
                 else
                 {
-                    funcDict.Add(htFunction.cppFunction.Name, htFunction);
+                    funcDict.Add(htFunction.name, htFunction);
                 }
             }
+            htClass.overloadFunctions = overloadFunctions;
 
             foreach (CppField cppField in cppClass.Fields)
             {
