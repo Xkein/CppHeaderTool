@@ -92,5 +92,14 @@ namespace CppHeaderTool.Meta
         {
             return _tags.Keys.Concat(_kvPairs.Keys);
         }
+
+        public override string ToString()
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.Append($"tags: [{string.Join(", ", tags.Keys)}]; ");
+            sb.Append($"pairs: [{string.Join(", ", kvPairs.Select(p => $"({p.Key}: {p.Value})"))}]; ");
+            sb.Append($"string list: {{ {string.Join(", ", stringList.Select(p => $"{p.Key}: [{string.Join(", ", p.Value)}]"))} }}; ");
+            return sb.ToString();
+        }
     }
 }

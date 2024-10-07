@@ -101,6 +101,7 @@ namespace CppHeaderTool.Parser
                 else
                 {
                     Log.Verbose($"{meta.sourceSpan}: {keyword}({rawMeta})");
+                    //Log.Verbose($"{meta.sourceSpan}: {keyword}({rawMeta}) -- {meta}");
                 }
             }
             catch (Exception e)
