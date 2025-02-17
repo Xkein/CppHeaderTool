@@ -18,6 +18,7 @@ namespace CppHeaderTool.Types
 
         public FunctionMeta meta;
         public bool isOverload;
+        public bool isOverride;
         public bool isDeleted => cppFunction.Flags.HasFlag(CppFunctionFlags.Deleted);
         public bool isConst => cppFunction.IsConst;
         public bool isStatic => cppFunction.IsStatic;

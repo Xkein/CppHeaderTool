@@ -54,8 +54,23 @@ namespace CppHeaderTool.Types
         }
         public bool isInterface;
         public IEnumerable<HtFunction> allFunctions => constructors.Concat(destructors).Concat(functions);
+        public IEnumerable<HtFunction> allBaseFunctions
+        {
+            get
+            {
+                IEnumerable<HtFunction> result = Enumerable.Empty<HtFunction>();
+                foreach (HtBaseClass baseClass in baseClasses)
+                {
+                    if (baseClass.klass == null)
+                        continue;
+                    result = result.Concat(baseClass.klass.allFunctions).Concat(baseClass.klass.allBaseFunctions);
+                }
+                return result;
+            }
+        }
 
         public Dictionary<string, List<HtFunction>> overloadFunctions;
+        public List<HtFunction> overrideFunctions;
 
         public List<HtBaseClass> baseClasses;
         public List<HtFunction> functions;

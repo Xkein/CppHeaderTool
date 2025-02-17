@@ -126,6 +126,16 @@ namespace CppHeaderTool.Parser
             }
             htClass.overloadFunctions = overloadFunctions;
 
+            List<HtFunction> overrideFunctions = new();
+            foreach (HtFunction htFunction in htClass.allBaseFunctions)
+            {
+                if (funcDict.TryGetValue(htFunction.name, out HtFunction myFunction)) {
+                    myFunction.isOverride = true;
+                    overrideFunctions.Add(myFunction);
+                }
+            }
+            htClass.overrideFunctions = overrideFunctions;
+
             foreach (CppField cppField in cppClass.Fields)
             {
                 if (typeTables.TryGet(cppField, out HtProperty htProperty))
