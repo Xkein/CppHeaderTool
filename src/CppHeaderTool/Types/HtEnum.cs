@@ -10,17 +10,18 @@ using System.Threading.Tasks;
 
 namespace CppHeaderTool.Types
 {
-    public class HtEnumConstant : HtType, IHasCppElement
+    public class HtEnumConstant : HtType, IHasCppElement, IHasMeta
     {
         public CppElement element => cppEnumItem;
         public CppEnumItem cppEnumItem;
         public string uniqueName => TypeTables.GetUniqueName(cppEnumItem);
 
         public EnumConstantMeta meta;
+        public ref RawMeta rawMeta => ref meta.Raw;
         public string name => cppEnumItem.Name;
         public long value => cppEnumItem.Value;
     }
-    public class HtEnum : HtType, IHasCppElement
+    public class HtEnum : HtType, IHasCppElement, IHasMeta
     {
         public CppElement element => cppEnum;
         public CppEnum cppEnum;
@@ -29,6 +30,7 @@ namespace CppHeaderTool.Types
         public List<HtEnumConstant> constants;
 
         public EnumMeta meta;
+        public ref RawMeta rawMeta => ref meta.Raw;
 
         public string name => cppEnum.Name;
         public string fullName => cppEnum.FullName;

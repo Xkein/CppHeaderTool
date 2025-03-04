@@ -10,13 +10,14 @@ using System.Threading.Tasks;
 
 namespace CppHeaderTool.Types
 {
-    public class HtFunction : HtType, IHasCppElement
+    public class HtFunction : HtType, IHasCppElement, IHasMeta
     {
         public CppElement element => cppFunction;
         public CppFunction cppFunction;
         public string uniqueName => TypeTables.GetUniqueName(cppFunction);
 
         public FunctionMeta meta;
+        public ref RawMeta rawMeta => ref meta.Raw;
         public bool isOverload;
         public bool isOverride;
         public bool isDeleted => cppFunction.Flags.HasFlag(CppFunctionFlags.Deleted);

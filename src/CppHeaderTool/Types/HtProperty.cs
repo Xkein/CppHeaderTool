@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace CppHeaderTool.Types
 {
-    public class HtProperty : HtType, IHasCppElement
+    public class HtProperty : HtType, IHasCppElement, IHasMeta
     {
         public CppElement element => cppField;
         public CppField cppField;
@@ -47,5 +47,6 @@ namespace CppHeaderTool.Types
         }
 
         public PropertyMeta meta;
+        public ref RawMeta rawMeta => ref meta.Raw;
     }
 }

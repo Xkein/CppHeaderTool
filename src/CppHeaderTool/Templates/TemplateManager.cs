@@ -144,6 +144,7 @@ namespace CppHeaderTool.Templates
             scriptObject.Import(info.importObject);
             scriptObject.SetValue("mathex", new ScriptMath(), true);
             scriptObject.SetValue("httype", new ScriptType(), true);
+            scriptObject.SetValue("htmeta", new ScriptMeta(), true);
             scriptObject.Add("module", info.module);
 
             templateContext.TemplateLoader = this;

@@ -25,7 +25,7 @@ namespace CppHeaderTool.Types
             }
         }
     }
-    public class HtClass : HtType, IHasCppElement
+    public class HtClass : HtType, IHasCppElement, IHasMeta
     {
         public CppElement element => cppClass;
         public CppClass cppClass;
@@ -43,6 +43,7 @@ namespace CppHeaderTool.Types
         public bool isUnion => cppClass.ClassKind == CppClassKind.Union;
         public int alignOf => cppClass.AlignOf;
         public string name => cppClass.Name;
+        public string fullName => cppClass.FullName;
         public string displayName => cppClass.GetDisplayName();
         public string sourceFile
         {
@@ -82,7 +83,7 @@ namespace CppHeaderTool.Types
         public List<HtClass> anonymousClasses;
 
         public ClassMeta meta;
-
+        public ref RawMeta rawMeta => ref meta.Raw;
 
     }
 }

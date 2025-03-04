@@ -248,24 +248,41 @@ namespace CppHeaderTool.Parser
 
         private async Task ParseChildren(HtModule htModule, CppCompilation compilation)
         {
+            List<CppEnum> enums = compilation.Enums.ToList();
+            List<CppClass> classes = compilation.Classes.ToList();
+            List<CppFunction> functions = compilation.Functions.ToList();
+            List<CppField> fields = compilation.Fields.ToList();
+            List<CppNamespace> namespaces = compilation.Namespaces.ToList();
+            // collect all namespaces
+            for (int idx = 0; idx < namespaces.Count; idx++)
+            {
+                namespaces.AddRange(namespaces[idx].Namespaces);
+            }
+            foreach (CppNamespace ns in namespaces)
+            {
+                enums.AddRange(ns.Enums);
+                classes.AddRange(ns.Classes);
+                functions.AddRange(ns.Functions);
+                fields.AddRange(ns.Fields);
+            }
             await Task.WhenAll(
-                this.ParseList(compilation.Enums).AsTask(),
-                this.ParseList(compilation.Classes).AsTask(),
-                this.ParseList(compilation.Functions).AsTask(),
-                this.ParseList(compilation.Fields).AsTask()
+                this.ParseList(enums).AsTask(),
+                this.ParseList(classes).AsTask(),
+                this.ParseList(functions).AsTask(),
+                this.ParseList(fields).AsTask()
             );
 
             var typeTables = Session.typeTables;
 
             Log.Information($"collecting parsed types...");
-            foreach (CppClass cppClass in compilation.Classes)
+            foreach (CppClass cppClass in classes)
             {
                 if (typeTables.TryGet(cppClass, out HtClass htClass))
                 {
                     htModule.classes.Add(htClass);
                 }
             }
-            foreach (CppFunction cppFunction in compilation.Functions)
+            foreach (CppFunction cppFunction in functions)
             {
                 if (typeTables.TryGet(cppFunction, out HtFunction htFunction))
                 {
@@ -273,7 +290,7 @@ namespace CppHeaderTool.Parser
                 }
             }
 
-            foreach (CppField cppField in compilation.Fields)
+            foreach (CppField cppField in fields)
             {
                 if (typeTables.TryGet(cppField, out HtProperty htProperty))
                 {
@@ -281,7 +298,7 @@ namespace CppHeaderTool.Parser
                 }
             }
 
-            foreach (CppEnum cppEnum in compilation.Enums)
+            foreach (CppEnum cppEnum in enums)
             {
                 if (typeTables.TryGet(cppEnum, out HtEnum htEnum))
                 {

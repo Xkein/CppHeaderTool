@@ -28,8 +28,13 @@ namespace CppHeaderTool.CodeGen
                 return;
             }
 
-            List<TemplateGenerateInfo> generateInfos = new List<TemplateGenerateInfo>(100);
 
+            List<TemplateGenerateInfo> injectInfos = new List<TemplateGenerateInfo>(1);
+            Log.Information($"Injecting extra meta for module {moduleName}");
+            AddGenerateInfos(injectInfos, Session.config.injectMetaTemplates, _module, _module.moduleName);
+            Task injectTask = RunGenerateTask(injectInfos);
+
+            List<TemplateGenerateInfo> generateInfos = new List<TemplateGenerateInfo>(100);
             AddGenerateInfos(generateInfos, Session.config.moduleTemplates, _module, _module.moduleName);
 
             foreach (HtClass htClass in _module.classes)
@@ -42,8 +47,18 @@ namespace CppHeaderTool.CodeGen
                 AddGenerateInfos(generateInfos, Session.config.typeTemplates, htEnum, htEnum.cppEnum.Name);
             }
 
+            await injectTask;
+            if (Session.hasError) {
+                Log.Error($"error when injecting meta in module {moduleName}");
+                return;
+            }
             Log.Information($"Generating {generateInfos.Count} code file in module {moduleName}...");
+            await RunGenerateTask(generateInfos);
+            Log.Information($"Generated module {moduleName}");
+        }
 
+        private async Task RunGenerateTask(List<TemplateGenerateInfo> generateInfos)
+        {
             var pbarOption = new ProgressBarOptions() { DisplayTimeInRealTime = false, ProgressBarOnBottom = true, EnableTaskBarProgress = true };
             using var pbar = new ProgressBar(generateInfos.Count, "Generating code from template...", pbarOption);
 
@@ -70,8 +85,6 @@ namespace CppHeaderTool.CodeGen
                     pbar.Tick();
                 }
             });
-
-            Log.Information($"Generated module {moduleName}");
         }
 
         private void AddGenerateInfos(List<TemplateGenerateInfo> list, Dictionary<string, string> templates, object importObject, string name)

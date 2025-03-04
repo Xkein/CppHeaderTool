@@ -6,6 +6,11 @@ using System.Threading.Tasks;
 
 namespace CppHeaderTool.Meta
 {
+    public interface IHasMeta
+    {
+        ref RawMeta rawMeta { get; }
+    }
+
     public struct ClassMeta
     {
         public AccessibilityMeta Accessibility;
@@ -13,13 +18,13 @@ namespace CppHeaderTool.Meta
         public SerializationMeta Serialization;
         public RawMeta Raw;
 
-        public bool AllVisible;
+        // public bool AllVisible;
     }
     public struct EnumConstantMeta
     {
         public RawMeta Raw;
 
-        public string DisplayName;
+        // public string DisplayName;
     }
     public struct EnumMeta
     {

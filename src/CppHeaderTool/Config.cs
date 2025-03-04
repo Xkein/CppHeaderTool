@@ -9,6 +9,7 @@ namespace CppHeaderTool
 
         public Dictionary<string, string> moduleTemplates { get; set; }
         public Dictionary<string, string> typeTemplates { get; set; }
+        public Dictionary<string, string> injectMetaTemplates { get; set; }
 
         public string moduleName { get; set; }
 
