@@ -49,7 +49,7 @@ namespace CppHeaderTool.Parser
             return ValueTask.CompletedTask;
         }
 
-        public static void ParseCursor(CXCursor cursor, CXCursor parent, CppFunction cppFunction)
+        public static void ParseCursor(UserCustomParseContext context, CppFunction cppFunction)
         {
             var userData = new CppFunctionUserObject();
             cppFunction.UserData = userData;
@@ -59,7 +59,7 @@ namespace CppHeaderTool.Parser
                 return;
             }
 
-            Tokenizer tokenizer = new Tokenizer(cursor);
+            Tokenizer tokenizer = new Tokenizer(context.Cursor);
             TokenIterator iter = new TokenIterator(tokenizer);
             while (iter.CanPeek)
             {

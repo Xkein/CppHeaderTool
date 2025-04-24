@@ -44,12 +44,12 @@ namespace CppHeaderTool.Parser
             return ValueTask.CompletedTask;
         }
 
-        public static void ParseCursor(CXCursor cursor, CXCursor parent, CppEnum cppEnum)
+        public static void ParseCursor(UserCustomParseContext context, CppEnum cppEnum)
         {
 
         }
 
-        public static void ParseCursor(CXCursor cursor, CXCursor parent, CppEnumItem cppEnumItem)
+        public static void ParseCursor(UserCustomParseContext context, CppEnumItem cppEnumItem)
         {
 
         }

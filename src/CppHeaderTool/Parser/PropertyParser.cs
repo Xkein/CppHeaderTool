@@ -65,7 +65,7 @@ namespace CppHeaderTool.Parser
             return;
         }
 
-        public static void ParseCursor(CXCursor cursor, CXCursor parent, CppField cppField)
+        public static void ParseCursor(UserCustomParseContext context, CppField cppField)
         {
             var userData = new CppFieldUserObject();
             cppField.UserData = userData;
@@ -75,7 +75,7 @@ namespace CppHeaderTool.Parser
                 return;
             }
 
-            Tokenizer tokenizer = new Tokenizer(cursor);
+            Tokenizer tokenizer = new Tokenizer(context.Cursor);
             TokenIterator iter = new TokenIterator(tokenizer);
             while (iter.CanPeek)
             {

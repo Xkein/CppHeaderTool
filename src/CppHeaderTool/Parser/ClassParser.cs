@@ -56,7 +56,7 @@ namespace CppHeaderTool.Parser
             Session.typeTables.Add(htClass);
         }
 
-        public static void ParseCursor(CXCursor cursor, CXCursor parent, CppClass cppClass)
+        public static void ParseCursor(UserCustomParseContext context, CppClass cppClass)
         {
             cppClass.UserData = new CppClassUserObject();
 
