@@ -44,6 +44,7 @@ namespace CppHeaderTool.Parser
             htClass.properties = new List<HtProperty>();
             htClass.enums = new List<HtEnum>();
             htClass.anonymousClasses = new List<HtClass>();
+            htClass.anonymousInlineProperties = new List<HtProperty>();
             htClass.isInterface = htClass.isAbstract && cppClass.Name.StartsWith('I');
 
             CppClassUserObject userObject = cppClass.GetUserData<CppClassUserObject>();
@@ -129,7 +130,8 @@ namespace CppHeaderTool.Parser
             List<HtFunction> overrideFunctions = new();
             foreach (HtFunction htFunction in htClass.allBaseFunctions)
             {
-                if (funcDict.TryGetValue(htFunction.name, out HtFunction myFunction)) {
+                if (funcDict.TryGetValue(htFunction.name, out HtFunction myFunction))
+                {
                     myFunction.isOverride = true;
                     overrideFunctions.Add(myFunction);
                 }
@@ -153,6 +155,32 @@ namespace CppHeaderTool.Parser
                 if (typeTables.TryGet(cppEnum, out HtEnum htEnum))
                 {
                     htClass.enums.Add(htEnum);
+                }
+            }
+            
+            SetAnonymousInlineProperties(htClass, htClass.anonymousInlineProperties);
+        }
+
+        private static void SetAnonymousInlineProperties(HtClass htClass, List<HtProperty> list)
+        {
+            foreach (HtProperty htProperty in htClass.properties)
+            {
+                if (htClass.isAnonymous && string.IsNullOrEmpty(htClass.name))
+                {
+                    list.Add(htProperty);
+                }
+                if (htProperty.anonymousClass == null || !string.IsNullOrEmpty(htProperty.name))
+                    continue;
+                foreach (HtProperty inlineProperty in htProperty.anonymousClass.properties)
+                {
+                    if (inlineProperty.anonymousClass == null || !string.IsNullOrEmpty(inlineProperty.name))
+                    {
+                        list.Add(inlineProperty);
+                    }
+                    else
+                    {
+                        SetAnonymousInlineProperties(inlineProperty.anonymousClass, list);
+                    }
                 }
             }
         }

@@ -59,6 +59,14 @@ namespace CppHeaderTool.Parser
                     {
                         htProperty.anonymousClass = anonymousClass;
                     }
+                    else
+                    {
+                        Log.Error($"Anonymous property '{htProperty.name}' could not get type.");
+                    }
+                }
+                else
+                {
+                    Log.Error($"Anonymous property '{htProperty.name}' has no type.");
                 }
             }
 

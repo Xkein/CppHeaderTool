@@ -81,6 +81,7 @@ namespace CppHeaderTool.Types
         public List<HtEnum> enums;
 
         public List<HtClass> anonymousClasses;
+        public List<HtProperty> anonymousInlineProperties;
 
         public ClassMeta meta;
         public ref RawMeta rawMeta => ref meta.Raw;
