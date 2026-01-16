@@ -41,9 +41,22 @@ namespace CppHeaderTool.Types
         public bool isClass => cppClass.ClassKind == CppClassKind.Class;
         public bool isStruct => cppClass.ClassKind == CppClassKind.Struct;
         public bool isUnion => cppClass.ClassKind == CppClassKind.Union;
+        public bool isTemplateClass => cppClass.TemplateKind == CppTemplateKind.TemplateClass;
         public int alignOf => cppClass.AlignOf;
         public string name => cppClass.Name;
         public string fullName => cppClass.FullName;
+        private string _identifier;
+        public string identifier
+        {
+            get
+            {   if (_identifier == null)
+                {
+                    _identifier = fullName.Replace('<', '_').Replace('>', '_').Replace(':', '_').Replace('*', '_').Replace(" ", "");
+                }
+                return _identifier;
+            }
+        }
+
         public string displayName => cppClass.GetDisplayName();
         public string sourceFile
         {
