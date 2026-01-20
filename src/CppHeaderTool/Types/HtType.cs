@@ -1,5 +1,6 @@
 ﻿using CppAst;
 using CppHeaderTool.Specifies;
+using CppHeaderTool.Tables;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -29,6 +30,13 @@ namespace CppHeaderTool.Types
                 case CppTypeKind.Array:
                 case CppTypeKind.Qualified:
                     return UnwrapType((type as CppTypeWithElementType).ElementType);
+                case CppTypeKind.Unexposed:
+                    string fullName = type.FullName;
+                    if (type.FullName.EndsWith('*') && Session.typeTables.TryGetClass(fullName.Substring(0, fullName.Length - 2), out HtClass klass))
+                    {
+                        return klass.cppClass;
+                    }
+                    return type;
                 default:
                     return type;
             }
