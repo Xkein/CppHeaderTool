@@ -34,5 +34,26 @@ namespace CppHeaderTool.Types
         public bool isPrivate => visibility == CppVisibility.Private;
         public bool isConstexpr;
         public string name  => cppFunction.Name;
+        
+        public string fullName
+        {
+            get
+            {
+                string fullparent = cppFunction.FullParentName;
+                return string.IsNullOrEmpty(fullparent) ? cppFunction.Name :$"{fullparent}::{cppFunction.Name}";
+            }
+        }
+        
+        private string _identifier;
+        public string identifier
+        {
+            get
+            {   if (_identifier == null)
+                {
+                    _identifier = fullName.Replace('<', '_').Replace('>', '_').Replace(':', '_').Replace('*', '_').Replace(" ", "");
+                }
+                return _identifier;
+            }
+        }
     }
 }

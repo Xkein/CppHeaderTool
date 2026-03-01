@@ -258,6 +258,11 @@ namespace CppHeaderTool.Parser
             {
                 namespaces.AddRange(namespaces[idx].Namespaces);
             }
+            // collect all classes
+            for (int idx = 0; idx < classes.Count; idx++)
+            {
+                classes.AddRange(classes[idx].Classes);
+            }
             foreach (CppNamespace ns in namespaces)
             {
                 enums.AddRange(ns.Enums);

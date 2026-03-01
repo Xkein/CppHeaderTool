@@ -48,5 +48,26 @@ namespace CppHeaderTool.Types
 
         public PropertyMeta meta;
         public ref RawMeta rawMeta => ref meta.Raw;
+        
+        public string fullName
+        {
+            get
+            {
+                string fullparent = cppField.FullParentName;
+                return string.IsNullOrEmpty(fullparent) ? cppField.Name :$"{fullparent}::{cppField.Name}";
+            }
+        }
+        
+        private string _identifier;
+        public string identifier
+        {
+            get
+            {   if (_identifier == null)
+                {
+                    _identifier = fullName.Replace('<', '_').Replace('>', '_').Replace(':', '_').Replace('*', '_').Replace(" ", "");
+                }
+                return _identifier;
+            }
+        }
     }
 }

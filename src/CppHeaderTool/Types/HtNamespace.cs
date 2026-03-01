@@ -13,6 +13,28 @@ namespace CppHeaderTool.Types
         public CppElement element => cppNamespace;
         public CppNamespace cppNamespace;
 
+        public string uniqueName => fullName;
+        public string fullName
+        {
+            get
+            {
+                string fullparent = cppNamespace.FullParentName;
+                return string.IsNullOrEmpty(fullparent) ? cppNamespace.Name :$"{fullparent}::{cppNamespace.Name}";
+            }
+        }
+        
+        private string _identifier;
+        public string identifier
+        {
+            get
+            {   if (_identifier == null)
+                {
+                    _identifier = fullName.Replace('<', '_').Replace('>', '_').Replace(':', '_').Replace('*', '_').Replace(" ", "");
+                }
+                return _identifier;
+            }
+        }
+
         public List<HtClass> classes;
         public List<HtFunction> functions;
         public List<HtProperty> properties;
