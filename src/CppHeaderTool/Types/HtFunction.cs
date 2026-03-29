@@ -48,9 +48,15 @@ namespace CppHeaderTool.Types
         public string identifier
         {
             get
-            {   if (_identifier == null)
+            {
+                if (_identifier == null)
                 {
-                    _identifier = fullName.Replace('<', '_').Replace('>', '_').Replace(':', '_').Replace('*', '_').Replace(" ", "");
+                    _identifier = fullName.Replace('<', '_')
+                        .Replace('>', '_')
+                        .Replace(':', '_')
+                        .Replace('*', '_')
+                        .Replace(" ", "")
+                        .Replace("[", "_").Replace("]", "_");
                 }
                 return _identifier;
             }
