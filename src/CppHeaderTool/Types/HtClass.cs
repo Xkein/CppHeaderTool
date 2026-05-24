@@ -14,7 +14,9 @@ namespace CppHeaderTool.Types
         public CppElement element => cppBaseType;
         public CppBaseType cppBaseType;
         public HtClass klass;
-        public string fullDisplayName => cppBaseType.Type.GetDisplayName();
+        public string fullDisplayName => cppBaseType.Type.GetDisplayName()
+            // prevent compiler error for std::function
+            .Replace("(*)(", "(");
 
         public HtBaseClass(CppBaseType cppBaseType)
         {
@@ -44,7 +46,9 @@ namespace CppHeaderTool.Types
         public bool isTemplateClass => cppClass.TemplateKind == CppTemplateKind.TemplateClass;
         public int alignOf => cppClass.AlignOf;
         public string name => cppClass.Name;
-        public string fullName => cppClass.FullName;
+        public string fullName => cppClass.FullName
+            // prevent compiler error for std::function
+            .Replace("(*)(", "(");
         private string _identifier;
         public string identifier
         {
@@ -52,12 +56,7 @@ namespace CppHeaderTool.Types
             {
                 if (_identifier == null)
                 {
-                    _identifier = fullName.Replace('<', '_')
-                        .Replace('>', '_')
-                        .Replace(':', '_')
-                        .Replace('*', '_')
-                        .Replace(" ", "")
-                        .Replace("[", "_").Replace("]", "_");
+                    _identifier = fullName.FormatIdentifier();
                 }
                 return _identifier;
             }

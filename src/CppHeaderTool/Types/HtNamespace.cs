@@ -1,4 +1,4 @@
-﻿using CppAst;
+using CppAst;
 using CppHeaderTool.Meta;
 using System;
 using System.Collections.Generic;
@@ -30,7 +30,7 @@ namespace CppHeaderTool.Types
             {
                 if (_identifier == null)
                 {
-                    _identifier = fullName.Replace('<', '_').Replace('>', '_').Replace(':', '_').Replace('*', '_').Replace(" ", "");
+                    _identifier = fullName.FormatIdentifier();
                 }
                 return _identifier;
             }

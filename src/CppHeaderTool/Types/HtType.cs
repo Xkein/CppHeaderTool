@@ -21,6 +21,19 @@ namespace CppHeaderTool.Types
             return (T)element.UserData;
         }
 
+        public static string FormatIdentifier(this string fullName, bool replaceArrayBrackets = true)
+        {
+            string identifier = fullName
+                .Replace('<', '_')
+                .Replace('>', '_')
+                .Replace(':', '_')
+                .Replace('*', '_')
+                .Replace(" ", "")
+                .Replace("(", "_").Replace(")", "_")
+                .Replace("[", "_").Replace("]", "_");
+            return identifier;
+        }
+
         public static CppType UnwrapType(this CppType type)
         {
             switch (type.TypeKind)

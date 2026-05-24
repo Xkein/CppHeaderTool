@@ -1,4 +1,4 @@
-﻿using CppAst;
+using CppAst;
 using CppHeaderTool.Meta;
 using CppHeaderTool.Parser;
 using CppHeaderTool.Specifies;
@@ -65,12 +65,7 @@ namespace CppHeaderTool.Types
             {
                 if (_identifier == null)
                 {
-                    _identifier = fullName.Replace('<', '_')
-                        .Replace('>', '_')
-                        .Replace(':', '_')
-                        .Replace('*', '_')
-                        .Replace(" ", "")
-                        .Replace("[", "_").Replace("]", "_");
+                    _identifier = fullName.FormatIdentifier();
                 }
                 return _identifier;
             }
