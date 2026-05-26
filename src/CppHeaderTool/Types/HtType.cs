@@ -27,6 +27,7 @@ namespace CppHeaderTool.Types
                 .Replace('<', '_')
                 .Replace('>', '_')
                 .Replace(':', '_')
+                .Replace(',', '_')
                 .Replace('*', '_')
                 .Replace(" ", "")
                 .Replace("(", "_").Replace(")", "_")
