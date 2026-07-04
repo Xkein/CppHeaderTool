@@ -44,6 +44,8 @@ namespace CppHeaderTool.Types
                 case CppTypeKind.Array:
                 case CppTypeKind.Qualified:
                     return UnwrapType((type as CppTypeWithElementType).ElementType);
+                case CppTypeKind.Typedef:
+                    return UnwrapType((type as CppTypedef).ElementType);
                 case CppTypeKind.Unexposed:
                     string fullName = type.FullName;
                     if (type.FullName.EndsWith('*') && Session.typeTables.TryGetClass(fullName.Substring(0, fullName.Length - 2), out HtClass klass))
